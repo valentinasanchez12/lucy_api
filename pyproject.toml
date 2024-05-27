@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "lucy"
+version = "0.1.0"
+description = ""
+authors = ["Valentina"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.11"
+starlette = "^0.37.2"
+gunicorn = "^22.0.0"
+uvicorn = "^0.29.0"
+asyncpg = "^0.29.0"
+nyoibo = "^0.6.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.1"
+pre-commit = "^3.7.1"
+ipython = "^8.24.0"
+xenon = "^0.9.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
