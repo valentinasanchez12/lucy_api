@@ -1,6 +1,6 @@
 from nyoibo import Entity, fields
 
-from lucy.domain.models import Provider
+from lucy.domain.models.provider import Provider
 
 
 class Brand(Entity):

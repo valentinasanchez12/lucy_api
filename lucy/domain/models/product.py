@@ -1,7 +1,8 @@
 from nyoibo import Entity, fields
 
-from lucy.domain.models import Brand, Category
-from lucy.domain.models import SanitaryRegistry
+from lucy.domain.models.brand import Brand
+from lucy.domain.models.category import Category
+from lucy.domain.models.sanitary_registry import SanitaryRegistry
 
 
 class Product(Entity):
