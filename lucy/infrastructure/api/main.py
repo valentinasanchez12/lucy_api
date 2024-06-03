@@ -2,6 +2,7 @@ from starlette.applications import Starlette
 from starlette.responses import PlainTextResponse
 from starlette.routing import Route, Mount
 
+from lucy.infrastructure.api.v1.endpoints.brand.brand import brand
 from lucy.infrastructure.api.v1.endpoints.category.category import category
 from lucy.infrastructure.api.v1.endpoints.provider.provider import provider
 from lucy.infrastructure.api.v1.endpoints.sanitary_registry.sanitary_registry import sanitary_registry
@@ -17,6 +18,7 @@ routes = [
     Mount('/api/category', routes=category.routes),
     Mount('/api/provider', routes=provider.routes),
     Mount('/api/sanitary-registry', routes=sanitary_registry.routes),
+    Mount('/api/brand', routes=brand.routes),
 
 ]
 
