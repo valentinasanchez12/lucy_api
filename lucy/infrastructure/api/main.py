@@ -3,6 +3,7 @@ from starlette.responses import PlainTextResponse
 from starlette.routing import Route, Mount
 
 from lucy.infrastructure.api.v1.endpoints.category.category import category
+from lucy.infrastructure.api.v1.endpoints.provider.provider import provider
 from lucy.infrastructure.repositories.pg_repositories.pg_pool import initialize_pool
 
 
@@ -12,7 +13,9 @@ async def heart_beat(request):
 
 routes = [
     Route('/', endpoint=heart_beat),
-    Mount('/api', routes=category.routes)
+    Mount('/api/category', routes=category.routes),
+    Mount('/api/provider', routes=provider.routes),
+
 ]
 
 app = Starlette(routes=routes)

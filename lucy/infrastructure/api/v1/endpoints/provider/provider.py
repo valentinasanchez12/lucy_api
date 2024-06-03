@@ -4,20 +4,23 @@ from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.routing import Route
 
-from lucy.application.use_case.category.create_category import CreateCategory
-from lucy.domain.models.category import Category
-from lucy.infrastructure.repositories.pg_repositories.pg_category_repository import PGCategoryRepository
+from lucy.application.use_case.provider.create_provider import CreateProvider
+from lucy.domain.models.provider import Provider
+from lucy.infrastructure.repositories.pg_repositories.pg_provider_repository import PGProviderRepository
 
 
 async def save(request):
-    fields = ['name']
+    fields = ['name', 'represent', 'phone', 'email']
     data = await request.json()
     if all(key in data for key in fields):
-        category_data = Category(
+        provider_data = Provider(
             uuid=uuid.uuid4(),
-            name=data.get('name')
+            name=data.get('name'),
+            represent=data.get('represent'),
+            phone=data.get('phone'),
+            email=data.get('email')
         )
-        use_case = CreateCategory(repository=PGCategoryRepository(), category=category_data)
+        use_case = CreateProvider(repository=PGProviderRepository(), provider=provider_data)
         await use_case.create()
         return JSONResponse(status_code=200, content={'success': True, 'response': 'Created category successfully.'})
     else:
@@ -27,4 +30,4 @@ routes = [
     Route('/', endpoint=save, methods=['POST'])
 ]
 
-category = Starlette(routes=routes)
+provider = Starlette(routes=routes)
