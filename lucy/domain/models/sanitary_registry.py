@@ -4,6 +4,7 @@ from nyoibo import Entity, fields
 class SanitaryRegistry(Entity):
     _uuid = fields.StrField()
     _documents = fields.StrField()
+    _number_registry = fields.StrField()
     _expiration_date = fields.DateField()
     _cluster = fields.StrField()
     _status = fields.StrField()
