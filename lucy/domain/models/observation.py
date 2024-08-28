@@ -1,6 +1,6 @@
 from nyoibo import Entity, fields
 
-from lucy.domain.models import Product
+from lucy.domain.models.product import Product
 
 
 class Observation (Entity):
