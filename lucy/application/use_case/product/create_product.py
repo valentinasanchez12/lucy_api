@@ -1,5 +1,3 @@
-import asyncio
-
 from lucy.application.repositories import ProductRepository, ObservationRepository, CharacteristicRepository, \
     TechnicalSheetRepository
 from lucy.domain.models.characteristic import Characteristic
@@ -16,9 +14,9 @@ class CreateProduct:
             characteristic_repository: CharacteristicRepository,
             technical_sheet_repository: TechnicalSheetRepository,
             product: Product,
-            observation: Observation,
-            technical_sheet: TechnicalSheet,
-            characteristic: Characteristic,
+            observation: [Observation],
+            technical_sheet: [TechnicalSheet],
+            characteristic: [Characteristic],
     ):
         self._product = product
         self._observation = observation
@@ -34,4 +32,3 @@ class CreateProduct:
         await self._observation_repository.save(self._observation, self._product)
         await self._characteristic_repository.save(self._characteristic, self._product)
         await self._technical_sheet_repository.save(self._technical_sheet, self._product)
-
