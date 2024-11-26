@@ -16,11 +16,43 @@ class CategoryRepository(metaclass=ABCMeta):
     async def save(self, category: Category):
         pass
 
+    @abstractmethod
+    async def get_all(self):
+        pass
+
+    @abstractmethod
+    async def get_by_id(self, uuid: str):
+        pass
+
+    @abstractmethod
+    async def update(self, uuid: str, category: Category):
+        pass
+
+    @abstractmethod
+    async def delete(self, uuid: str):
+        pass
+
 
 class ProviderRepository(metaclass=ABCMeta):
 
     @abstractmethod
     async def save(self, provider: Provider):
+        pass
+
+    @abstractmethod
+    async def get_all(self):
+        pass
+
+    @abstractmethod
+    async def get_by_id(self, uuid: str):
+        pass
+
+    @abstractmethod
+    async def update(self, uuid: str, provider: Provider):
+        pass
+
+    @abstractmethod
+    async def delete(self, uuid: str):
         pass
 
 
@@ -29,10 +61,42 @@ class SanitaryRegistryRepository(metaclass=ABCMeta):
     async def save(self, sanitary_registry: SanitaryRegistry):
         pass
 
+    @abstractmethod
+    async def get_all(self):
+        pass
+
+    @abstractmethod
+    async def get_by_id(self, uuid: str):
+        pass
+
+    @abstractmethod
+    async def update(self, uuid: str, provider: Provider):
+        pass
+
+    @abstractmethod
+    async def delete(self, uuid: str):
+        pass
+
 
 class BrandRepository(metaclass=ABCMeta):
     @abstractmethod
     async def save(self, brand: Brand):
+        pass
+
+    @abstractmethod
+    async def get_all(self):
+        pass
+
+    @abstractmethod
+    async def get_by_id(self, uuid: str):
+        pass
+
+    @abstractmethod
+    async def update(self, uuid: str, brand: Brand):
+        pass
+
+    @abstractmethod
+    async def delete(self, uuid: str):
         pass
 
 
@@ -42,7 +106,19 @@ class ProductRepository(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def all_products(self):
+    async def get_all(self):
+        pass
+
+    @abstractmethod
+    async def get_by_id(self, uuid: str):
+        pass
+
+    @abstractmethod
+    async def update(self, uuid: str, product: Product):
+        pass
+
+    @abstractmethod
+    async def delete(self, uuid: str):
         pass
 
 
@@ -51,14 +127,62 @@ class ObservationRepository(metaclass=ABCMeta):
     async def save(self, observation: Observation, product: Product):
         pass
 
+    @abstractmethod
+    async def get_all(self):
+        pass
+
+    @abstractmethod
+    async def get_by_id(self, uuid: str):
+        pass
+
+    @abstractmethod
+    async def update(self, uuid: str, product: Product):
+        pass
+
+    @abstractmethod
+    async def delete(self, uuid: str):
+        pass
+
 
 class TechnicalSheetRepository(metaclass=ABCMeta):
     @abstractmethod
     async def save(self, technical_sheet: TechnicalSheet, product: Product):
         pass
 
+    @abstractmethod
+    async def get_all(self):
+        pass
+
+    @abstractmethod
+    async def get_by_id(self, uuid: str):
+        pass
+
+    @abstractmethod
+    async def update(self, uuid: str, technical_sheet: TechnicalSheet):
+        pass
+
+    @abstractmethod
+    async def delete(self, uuid: str):
+        pass
+
 
 class CharacteristicRepository(metaclass=ABCMeta):
     @abstractmethod
     async def save(self, characteristic: Characteristic, product: Product):
+        pass
+
+    @abstractmethod
+    async def get_all(self):
+        pass
+
+    @abstractmethod
+    async def get_by_id(self, uuid: str):
+        pass
+
+    @abstractmethod
+    async def update(self, uuid: str, characteristic: Characteristic):
+        pass
+
+    @abstractmethod
+    async def delete(self, uuid: str):
         pass

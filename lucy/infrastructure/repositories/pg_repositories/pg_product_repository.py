@@ -4,7 +4,7 @@ from lucy.infrastructure.repositories.pg_repositories.pg_pool import get_pool
 
 
 class PGProductRepository(ProductRepository):
-    async def all_products(self):
+    async def get_all(self):
         pass
 
     async def save(self, product: Product):

@@ -1,23 +1,110 @@
-from asyncpg import ForeignKeyViolationError
-
 from lucy.application.repositories import BrandRepository
 from lucy.domain.models.brand import Brand
 from lucy.infrastructure.repositories.pg_repositories.pg_pool import get_pool
 
 
 class PGBrandRepository(BrandRepository):
+    async def get_all(self):
+        pool = get_pool()
+        async with pool.acquire() as connection:
+            rows = await connection.fetch(
+                '''
+                SELECT uuid, name, created_at, updated_at, delete_at
+                FROM brands
+                WHERE delete_at IS NULL
+                '''
+            )
+            return [Brand(
+                uuid=row['uuid'],
+                name=row['name'],
+                created_at=row['created_at'],
+                update_at=row['updated_at'],
+                delete_at=row['delete_at']
+            ) for row in rows]
+
+    async def get_by_id(self, uuid: str):
+        pool = get_pool()
+        async with pool.acquire() as connection:
+            row = await connection.fetchrow(
+                '''
+                SELECT uuid, name, created_at, updated_at, delete_at
+                FROM brands
+                WHERE uuid = $1 AND delete_at IS NULL
+                ''',
+                uuid
+            )
+            if row:
+                return Brand(
+                    uuid=row['uuid'],
+                    name=row['name'],
+                    created_at=row['created_at'],
+                    update_at=row['updated_at'],
+                    delete_at=row['delete_at']
+                )
+            return None
+
+    async def update(self, uuid: str, brand: Brand):
+        pool = get_pool()
+        async with pool.acquire() as connection:
+            row = await connection.fetchrow(
+                '''
+                UPDATE brands
+                SET name = COALESCE($2, name),
+                    updated_at = LOCALTIMESTAMP
+                WHERE uuid = $1 AND delete_at IS NULL
+                RETURNING uuid, name, created_at, updated_at, delete_at
+                ''',
+                uuid,
+                brand.name
+            )
+            if row:
+                return Brand(
+                    uuid=row['uuid'],
+                    name=row['name'],
+                    created_at=row['created_at'],
+                    update_at=row['updated_at'],
+                    delete_at=row['delete_at']
+                )
+            return None
+
+    async def delete(self, uuid: str):
+        async def delete(self, brand_id: str):
+            pool = get_pool()
+            async with pool.acquire() as connection:
+                row = await connection.fetchrow(
+                    '''
+                    UPDATE brands
+                    SET delete_at = LOCALTIMESTAMP
+                    WHERE uuid = $1 AND delete_at IS NULL
+                    RETURNING uuid, name, created_at, updated_at, delete_at
+                    ''',
+                    brand_id
+                )
+                if row:
+                    return Brand(
+                        uuid=row['uuid'],
+                        name=row['name'],
+                        created_at=row['created_at'],
+                        update_at=row['updated_at'],
+                        delete_at=row['delete_at']
+                    )
+                return None
+
     async def save(self, brand: Brand):
         pool = get_pool()
         async with pool.acquire() as connection:
-            try:
-                await connection.execute(
-                    '''
-                        insert into brands (uuid, name, provider_uuid, created_at, updated_at)
-                        values ($1, $2, $3, LOCALTIMESTAMP, LOCALTIMESTAMP)
-                    ''',
-                    brand.uuid,
-                    brand.name,
-                    brand.provider.uuid
-                )
-            except ForeignKeyViolationError:
-                raise ValueError('violates foreign key constraint')
+            row = await connection.fetchrow(
+                '''
+                    insert into brands (uuid, name, created_at, updated_at)
+                    values ($1, $2, LOCALTIMESTAMP, LOCALTIMESTAMP)
+                    returning uuid, name, created_at, updated_at
+                ''',
+                brand.uuid,
+                brand.name
+            )
+            return Brand(
+                uuid=row['uuid'],
+                name=row['name'],
+                created_at=row['created_at'],
+                updated_at=row['updated_at']
+            )
