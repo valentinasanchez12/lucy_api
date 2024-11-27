@@ -1,3 +1,5 @@
+import uuid
+
 from lucy.application.repositories import CategoryRepository
 from lucy.domain.models.category import Category
 from lucy.infrastructure.repositories.pg_repositories.pg_pool import get_pool
@@ -5,14 +7,106 @@ from lucy.infrastructure.repositories.pg_repositories.pg_pool import get_pool
 
 class PGCategoryRepository(CategoryRepository):
 
+    async def get_all(self):
+        pool = get_pool()
+        async with pool.acquire() as connection:
+            rows = await connection.fetch(
+                '''
+                SELECT uuid, name, created_at, updated_at, delete_at
+                FROM categories
+                WHERE delete_at IS NULL
+                '''
+            )
+            return [Category(
+                uuid=row['uuid'],
+                name=row['name'],
+                created_at=row['created_at'],
+                update_at=row['updated_at'],
+                delete_at=row['delete_at']
+            ) for row in rows]
+
+    async def get_by_id(self, category_id: str):
+        pool = get_pool()
+        async with pool.acquire() as connection:
+            row = await connection.fetchrow(
+                '''
+                SELECT uuid, name, created_at, updated_at, delete_at
+                FROM categories
+                WHERE uuid = $1 AND delete_at IS NULL
+                ''',
+                category_id
+            )
+            if row:
+                return Category(
+                    _uuid=row['uuid'],
+                    _name=row['name'],
+                    _created_at=row['created_at'],
+                    _update_at=row['updated_at'],
+                    _delete_at=row['delete_at']
+                )
+            return None
+
+    async def update(self, category_id: str, category: Category):
+        pool = get_pool()
+        async with pool.acquire() as connection:
+            row = await connection.fetchrow(
+                '''
+                UPDATE categories
+                SET name = COALESCE($2, name),
+                    updated_at = LOCALTIMESTAMP
+                WHERE uuid = $1 AND delete_at IS NULL
+                RETURNING uuid, name, created_at, updated_at, delete_at
+                ''',
+                category_id,
+                category._name
+            )
+            if row:
+                return Category(
+                    _uuid=row['uuid'],
+                    _name=row['name'],
+                    _created_at=row['created_at'],
+                    _update_at=row['updated_at'],
+                    _delete_at=row['delete_at']
+                )
+            return None
+
+    async def delete(self, category_id: str):
+        pool = get_pool()
+        async with pool.acquire() as connection:
+            row = await connection.fetchrow(
+                '''
+                UPDATE categories
+                SET delete_at = LOCALTIMESTAMP
+                WHERE uuid = $1 AND delete_at IS NULL
+                RETURNING uuid, name, created_at, updated_at, delete_at
+                ''',
+                category_id
+            )
+            if row:
+                return Category(
+                    _uuid=row['uuid'],
+                    _name=row['name'],
+                    _created_at=row['created_at'],
+                    _update_at=row['updated_at'],
+                    _delete_at=row['delete_at']
+                )
+            return None
+
     async def save(self, category: Category):
         pool = get_pool()
         async with pool.acquire() as connection:
-            await connection.execute(
+            row = await connection.fetchrow(
                 '''
                     insert into categories (uuid, name, created_at, updated_at)
                     values ($1, $2, LOCALTIMESTAMP, LOCALTIMESTAMP)
+                    returning uuid, name, created_at, updated_at
                 ''',
                 category.uuid,
                 category.name
             )
+        return Category(
+            uuid=row['uuid'],
+            name=row['name'],
+            created_at=row['created_at'],
+            updated_at=row['updated_at']
+        )

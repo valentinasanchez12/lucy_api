@@ -176,7 +176,7 @@ async def delete_brand(request: Request):
     try:
         brand_id = request.path_params['brand_id']
         use_case = BrandUseCase(repository=PGBrandRepository())
-        deleted_brand = await use_case.delete(uuid=brand_id)
+        deleted_brand = await use_case.delete(brand_id=brand_id)
 
         if deleted_brand:
             return JSONResponse(

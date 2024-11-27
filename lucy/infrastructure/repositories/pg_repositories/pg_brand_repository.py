@@ -67,8 +67,7 @@ class PGBrandRepository(BrandRepository):
                 )
             return None
 
-    async def delete(self, uuid: str):
-        async def delete(self, brand_id: str):
+    async def delete(self, brand_id: str):
             pool = get_pool()
             async with pool.acquire() as connection:
                 row = await connection.fetchrow(

@@ -24,5 +24,6 @@ class BrandUseCase:
         brand = await self._repository.update(uuid=uuid, brand=updated_brand)
         return brand.to_dict() if brand else None
 
-    async def delete(self, uuid):
-        pass
+    async def delete(self, brand_id):
+        deleted_brand = await self._repository.delete(brand_id)
+        return deleted_brand.to_dict() if deleted_brand else None

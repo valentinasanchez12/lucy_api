@@ -21,15 +21,15 @@ class CategoryRepository(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def get_by_id(self, uuid: str):
+    async def get_by_id(self, category_id: str):
         pass
 
     @abstractmethod
-    async def update(self, uuid: str, category: Category):
+    async def update(self, category_id: str, category: Category):
         pass
 
     @abstractmethod
-    async def delete(self, uuid: str):
+    async def delete(self, category_id: str):
         pass
 
 
@@ -96,7 +96,7 @@ class BrandRepository(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def delete(self, uuid: str):
+    async def delete(self, brand_id: str):
         pass
 
 
