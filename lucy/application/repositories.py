@@ -186,3 +186,13 @@ class CharacteristicRepository(metaclass=ABCMeta):
     @abstractmethod
     async def delete(self, uuid: str):
         pass
+
+
+class BrandProviderRepository(metaclass=ABCMeta):
+    @abstractmethod
+    async def save(self, brand: Brand, provider: Provider):
+        pass
+
+    @abstractmethod
+    async def update(self, provider_id: str, brands: list):
+        pass

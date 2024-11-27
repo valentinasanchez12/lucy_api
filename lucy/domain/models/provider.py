@@ -1,5 +1,7 @@
 from nyoibo import Entity, fields
 
+from lucy.domain.models.brand import Brand
+
 
 class Provider(Entity):
     _uuid = fields.StrField()
@@ -7,9 +9,13 @@ class Provider(Entity):
     _represent = fields.StrField()
     _phone = fields.StrField()
     _email = fields.StrField()
+    _brands = fields.ListField()
     _created_at = fields.DatetimeField()
     _update_at = fields.DatetimeField()
     _delete_at = fields.DatetimeField()
+
+    def add_brand(self, brand: Brand):
+        self._brands.append(brand)
 
     def to_dict(self) -> dict:
         return {

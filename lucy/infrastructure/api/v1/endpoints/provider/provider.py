@@ -6,13 +6,16 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.routing import Route
 
+from lucy.application.use_case.brand_provider_use_case import BrandProviderUseCase
 from lucy.application.use_case.provider.provider_use_case import ProviderUseCase
+from lucy.domain.models.brand import Brand
 from lucy.domain.models.provider import Provider
 from lucy.infrastructure import validate_data
+from lucy.infrastructure.repositories.pg_repositories.pg_brand_provider_repository import PGBrandProviderRepository
 from lucy.infrastructure.repositories.pg_repositories.pg_provider_repository import PGProviderRepository
 
 
-required_fields = ['name', 'represent', 'phone', 'email']
+required_fields = ['name', 'represent', 'phone', 'email', 'brands']
 
 
 async def endpoint(request: Request):
@@ -43,9 +46,15 @@ async def save(request: Request):
             phone=data['phone'],
             email=data['email']
         )
+        for brand in data['brands']:
+            provider_data.add_brand(Brand(**brand))
 
         use_case = ProviderUseCase(repository=PGProviderRepository(), provider=provider_data)
         provider_add = await use_case.create()
+        if provider_add:
+            brand_provider = BrandProviderUseCase(PGBrandProviderRepository())
+            await brand_provider.save(brand=provider_data.brands, provider=provider_add.provider)
+        provider_add['brands'] = provider_data.brands
         return JSONResponse(
             status_code=200,
             content={
@@ -137,7 +146,6 @@ async def update_provider(request: Request):
                     'response': 'No data provided for update.'
                 }
             )
-
         validation = validate_data(data, required_fields)
         if not validation["is_valid"]:
             return JSONResponse(
@@ -149,8 +157,14 @@ async def update_provider(request: Request):
                 }
             )
 
-        use_case = ProviderUseCase(repository=PGProviderRepository())
-        updated_provider = await use_case.update(uuid=provider_id, update_data=data)
+        brand_provider_repository = PGBrandProviderRepository()
+        brand_provider_use_case = BrandProviderUseCase(repository=brand_provider_repository)
+        provider_use_case = ProviderUseCase(
+            repository=PGProviderRepository(),
+            brand_provider_use_case=brand_provider_use_case
+        )
+
+        updated_provider = await provider_use_case.update(uuid=provider_id, update_data=data)
 
         if updated_provider:
             return JSONResponse(
@@ -191,7 +205,7 @@ async def delete_provider(request: Request):
             return JSONResponse(
                 status_code=200,
                 content={
-                    'data': deleted_provider.to_dict(),
+                    'data': deleted_provider,
                     'success': True,
                     'response': 'Provider deleted successfully.'
                 }
