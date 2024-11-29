@@ -66,15 +66,15 @@ class SanitaryRegistryRepository(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def get_by_id(self, uuid: str):
+    async def get_by_id(self, registry_id: str):
         pass
 
     @abstractmethod
-    async def update(self, uuid: str, provider: Provider):
+    async def update(self, registry_id: str, sanitary_registry: SanitaryRegistry):
         pass
 
     @abstractmethod
-    async def delete(self, uuid: str):
+    async def delete(self, registry_id: str):
         pass
 
 
