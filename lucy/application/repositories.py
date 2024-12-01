@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 from lucy.domain.models.brand import Brand
 from lucy.domain.models.category import Category
 from lucy.domain.models.characteristic import Characteristic
-from lucy.domain.models.observation import Observation
+from lucy.domain.models.comments import Comments
 from lucy.domain.models.product import Product
 from lucy.domain.models.provider import Provider
 from lucy.domain.models.sanitary_registry import SanitaryRegistry
@@ -110,21 +110,29 @@ class ProductRepository(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def get_by_id(self, uuid: str):
+    async def get_by_id(self, product_id: str):
         pass
 
     @abstractmethod
-    async def update(self, uuid: str, product: Product):
+    async def update(self, product_id: str, product: Product, images: list):
         pass
 
     @abstractmethod
-    async def delete(self, uuid: str):
+    async def delete(self, product_id: str):
+        pass
+
+    @abstractmethod
+    async def search(self, query: str):
+        pass
+
+    @abstractmethod
+    async def get_random(self, limit: int):
         pass
 
 
-class ObservationRepository(metaclass=ABCMeta):
+class CommentRepository(metaclass=ABCMeta):
     @abstractmethod
-    async def save(self, observation: Observation, product: Product):
+    async def save(self, comment: Comments, product_uuid):
         pass
 
     @abstractmethod
@@ -132,21 +140,25 @@ class ObservationRepository(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def get_by_id(self, uuid: str):
+    async def get_by_id(self, comment_id: str):
         pass
 
     @abstractmethod
-    async def update(self, uuid: str, product: Product):
+    async def update(self, comment_id: str, product: Product):
         pass
 
     @abstractmethod
-    async def delete(self, uuid: str):
+    async def delete(self, comment_id: str):
+        pass
+
+    @abstractmethod
+    async def get_by_product_id(self, product_id: str):
         pass
 
 
 class TechnicalSheetRepository(metaclass=ABCMeta):
     @abstractmethod
-    async def save(self, technical_sheet: TechnicalSheet, product: Product):
+    async def save(self, technical_sheet: TechnicalSheet, product_uuid):
         pass
 
     @abstractmethod
@@ -158,7 +170,7 @@ class TechnicalSheetRepository(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def update(self, uuid: str, technical_sheet: TechnicalSheet):
+    async def update(self, product_id: str, technical_sheet: TechnicalSheet):
         pass
 
     @abstractmethod
@@ -168,7 +180,7 @@ class TechnicalSheetRepository(metaclass=ABCMeta):
 
 class CharacteristicRepository(metaclass=ABCMeta):
     @abstractmethod
-    async def save(self, characteristic: Characteristic, product: Product):
+    async def save(self, characteristic: Characteristic, product_uuid):
         pass
 
     @abstractmethod
@@ -176,15 +188,15 @@ class CharacteristicRepository(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def get_by_id(self, uuid: str):
+    async def get_by_id(self, product_id: str):
         pass
 
     @abstractmethod
-    async def update(self, uuid: str, characteristic: Characteristic):
+    async def update(self, product_id: str, characteristics: Characteristic):
         pass
 
     @abstractmethod
-    async def delete(self, uuid: str):
+    async def delete(self, product_id: str):
         pass
 
 

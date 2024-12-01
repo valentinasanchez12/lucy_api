@@ -53,7 +53,7 @@ async def save(request: Request):
         provider_add = await use_case.create()
         if provider_add:
             brand_provider = BrandProviderUseCase(PGBrandProviderRepository())
-            await brand_provider.save(brand=provider_data.brands, provider=provider_add.provider)
+            await brand_provider.save(brand=provider_data.brands, provider=provider_add.product)
         provider_add['brands'] = provider_data.brands
         return JSONResponse(
             status_code=200,
