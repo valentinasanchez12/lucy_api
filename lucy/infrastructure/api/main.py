@@ -1,4 +1,5 @@
 from starlette.applications import Starlette
+from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import PlainTextResponse
 from starlette.routing import Route, Mount
 
@@ -27,6 +28,14 @@ routes = [
 ]
 
 app = Starlette(routes=routes)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Origen permitido (frontend)
+    allow_methods=["*"],                     # Métodos permitidos (GET, POST, etc.)
+    allow_headers=["*"],                     # Headers permitidos
+    allow_credentials=True,                  # Permitir credenciales (cookies, Authorization headers)
+)
 
 
 @app.on_event('startup')
