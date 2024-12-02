@@ -21,9 +21,12 @@ class Product(Entity):
     _brand = fields.LinkField(to=Brand)
     _category = fields.LinkField(to=Category)
     _sanitary_registry = fields.LinkField(to=SanitaryRegistry)
+    _comments = fields.ListField()
+    _characteristics = fields.ListField()
+    _technical_sheets = fields.ListField()
     _created_at = fields.DatetimeField()
-    _update_at = fields.DatetimeField()
-    _delete_at = fields.DatetimeField()
+    _updated_at = fields.DatetimeField()
+    _deleted_at = fields.DatetimeField()
 
     def to_dict(self) -> dict:
         return {
@@ -42,7 +45,10 @@ class Product(Entity):
             "brand": self._brand.to_dict() if self._brand else None,
             "category": self._category.to_dict() if self._category else None,
             "sanitary_registry": self._sanitary_registry.to_dict() if self._sanitary_registry else None,
-            "created_at": self._created_at if self._created_at else None,
-            "update_at": self._update_at if self._update_at else None,
-            "delete_at": self._delete_at if self._delete_at else None,
+            "comments": self._comments if self._comments else None,
+            "characteristics": self._characteristics if self._characteristics else None,
+            "technical_sheets": self._technical_sheets if self._technical_sheets else None,
+            "created_at": self._created_at.isoformat() if self._created_at else None,
+            "updated_at": self._updated_at.isoformat() if self._updated_at else None,
+            "deleted_at": self._deleted_at.isoformat() if self._deleted_at else None,
         }

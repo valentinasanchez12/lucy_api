@@ -43,16 +43,16 @@ class PGProviderRepository(ProviderRepository):
                     p.email,
                     p.created_at AS provider_created_at,
                     p.updated_at AS provider_updated_at,
-                    p.delete_at AS provider_delete_at,
+                    p.deleted_at AS provider_deleted_at,
                     b.uuid AS brand_uuid,
                     b.name AS brand_name,
                     b.created_at AS brand_created_at,
                     b.updated_at AS brand_updated_at,
-                    b.delete_at AS brand_delete_at
+                    b.deleted_at AS brand_deleted_at
                 FROM providers p
                 LEFT JOIN brand_providers bp ON p.uuid = bp.provider_uuid
                 LEFT JOIN brands b ON bp.brand_uuid = b.uuid
-                WHERE p.delete_at IS NULL
+                WHERE p.deleted_at IS NULL
                 '''
             )
 
@@ -69,8 +69,8 @@ class PGProviderRepository(ProviderRepository):
                             phone=row['phone'],
                             email=row['email'],
                             created_at=row['provider_created_at'],
-                            update_at=row['provider_updated_at'],
-                            delete_at=row['provider_delete_at']
+                            updated_at=row['provider_updated_at'],
+                            deleted_at=row['provider_deleted_at']
                         ),
                         "brands": []
                     }
@@ -80,8 +80,8 @@ class PGProviderRepository(ProviderRepository):
                         uuid=row['brand_uuid'],
                         name=row['brand_name'],
                         created_at=row['brand_created_at'],
-                        update_at=row['brand_updated_at'],
-                        delete_at=row['brand_delete_at']
+                        updated_at=row['brand_updated_at'],
+                        deleted_at=row['brand_deleted_at']
                     )
                     providers_dict[provider_id]["brands"].append(brand)
 
@@ -106,16 +106,16 @@ class PGProviderRepository(ProviderRepository):
                     p.email,
                     p.created_at AS provider_created_at,
                     p.updated_at AS provider_updated_at,
-                    p.delete_at AS provider_delete_at,
+                    p.deleted_at AS provider_deleted_at,
                     b.uuid AS brand_uuid,
                     b.name AS brand_name,
                     b.created_at AS brand_created_at,
                     b.updated_at AS brand_updated_at,
-                    b.delete_at AS brand_delete_at
+                    b.deleted_at AS brand_deleted_at
                 FROM providers p
                 LEFT JOIN brand_providers bp ON p.uuid = bp.provider_uuid
                 LEFT JOIN brands b ON bp.brand_uuid = b.uuid
-                WHERE p.uuid = $1 AND p.delete_at IS NULL
+                WHERE p.uuid = $1 AND p.deleted_at IS NULL
                 ''',
                 uuid
             )
@@ -135,8 +135,8 @@ class PGProviderRepository(ProviderRepository):
                         phone=row['phone'],
                         email=row['email'],
                         created_at=row['provider_created_at'],
-                        update_at=row['provider_updated_at'],
-                        delete_at=row['provider_delete_at']
+                        updated_at=row['provider_updated_at'],
+                        deleted_at=row['provider_deleted_at']
                     )
 
                 if row['brand_uuid']:
@@ -144,8 +144,8 @@ class PGProviderRepository(ProviderRepository):
                         uuid=row['brand_uuid'],
                         name=row['brand_name'],
                         created_at=row['brand_created_at'],
-                        update_at=row['brand_updated_at'],
-                        delete_at=row['brand_delete_at']
+                        updated_at=row['brand_updated_at'],
+                        deleted_at=row['brand_deleted_at']
                     ))
 
             return {
@@ -164,8 +164,8 @@ class PGProviderRepository(ProviderRepository):
                     phone = COALESCE($4, phone),
                     email = COALESCE($5, email),
                     updated_at = LOCALTIMESTAMP
-                WHERE uuid = $1 AND delete_at IS NULL
-                RETURNING uuid, name, represent, phone, email, created_at, updated_at, delete_at
+                WHERE uuid = $1 AND deleted_at IS NULL
+                RETURNING uuid, name, represent, phone, email, created_at, updated_at, deleted_at
                 ''',
                 uuid,
                 provider.name,
@@ -181,8 +181,8 @@ class PGProviderRepository(ProviderRepository):
                     phone=row['phone'],
                     email=row['email'],
                     created_at=row['created_at'],
-                    update_at=row['updated_at'],
-                    delete_at=row['delete_at']
+                    updated_at=row['updated_at'],
+                    deleted_at=row['deleted_at']
                 )
             return None
 
@@ -200,9 +200,9 @@ class PGProviderRepository(ProviderRepository):
                 row = await connection.fetchrow(
                     '''
                     UPDATE providers
-                    SET delete_at = LOCALTIMESTAMP
-                    WHERE uuid = $1 AND delete_at IS NULL
-                    RETURNING uuid, name, represent, phone, email, created_at, updated_at, delete_at
+                    SET deleted_at = LOCALTIMESTAMP
+                    WHERE uuid = $1 AND deleted_at IS NULL
+                    RETURNING uuid, name, represent, phone, email, created_at, updated_at, deleted_at
                     ''',
                     uuid
                 )
@@ -214,7 +214,7 @@ class PGProviderRepository(ProviderRepository):
                         phone=row['phone'],
                         email=row['email'],
                         created_at=row['created_at'],
-                        update_at=row['updated_at'],
-                        delete_at=row['delete_at']
+                        updated_at=row['updated_at'],
+                        deleted_at=row['deleted_at']
                     )
                 return None

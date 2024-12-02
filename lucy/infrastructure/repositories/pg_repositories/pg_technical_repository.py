@@ -5,6 +5,15 @@ from lucy.infrastructure.repositories.pg_repositories.pg_pool import get_pool
 
 
 class PGTechnicalSheetRepository(TechnicalSheetRepository):
+    async def get_all(self):
+        pass
+
+    async def get_by_id(self, uuid: str):
+        pass
+
+    async def delete(self, uuid: str):
+        pass
+
     async def update(self, product_id: str, technical_sheet: TechnicalSheet):
         pool = get_pool()
         async with pool.acquire() as connection:
@@ -24,8 +33,8 @@ class PGTechnicalSheetRepository(TechnicalSheetRepository):
                     )
                     await connection.execute(
                         '''
-                        INSERT INTO technical_sheets (uuid, product_id, document, created_at)
-                        VALUES (gen_random_uuid(), $1, $2, LOCALTIMESTAMP)
+                        INSERT INTO technical_sheets (uuid, product_id, document, created_at, updated_at)
+                        VALUES (gen_random_uuid(), $1, $2, LOCALTIMESTAMP, LOCALTIMESTAMP)
                         ''',
                         product_id,
                         technical_sheet.document

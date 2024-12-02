@@ -1,8 +1,11 @@
 from lucy.application.repositories import ProductRepository
 from lucy.domain.models.brand import Brand
 from lucy.domain.models.category import Category
+from lucy.domain.models.characteristic import Characteristic
+from lucy.domain.models.comments import Comments
 from lucy.domain.models.product import Product
 from lucy.domain.models.sanitary_registry import SanitaryRegistry
+from lucy.domain.models.technical_sheets import TechnicalSheet
 from lucy.infrastructure.repositories.pg_repositories.pg_pool import get_pool
 
 
@@ -16,7 +19,7 @@ class PGProductRepository(ProductRepository):
                 SELECT p.uuid, p.generic_name, p.image, b.uuid AS brand_uuid, b.name AS brand_name
                 FROM products p
                 LEFT JOIN brands b ON p.brand_id = b.uuid
-                WHERE p.delete_at IS NULL
+                WHERE p.deleted_at IS NULL
                 ORDER BY RANDOM()
                 LIMIT $1
                 ''',
@@ -34,6 +37,7 @@ class PGProductRepository(ProductRepository):
                 }
                 for row in rows
             ]
+
     async def update(self, product_id: str, product: Product, images: list):
         pool = get_pool()
         async with pool.acquire() as connection:
@@ -56,7 +60,7 @@ class PGProductRepository(ProductRepository):
                         category_id = COALESCE($14, category_id),
                         sanitary_register_id = COALESCE($15, sanitary_register_id),
                         updated_at = LOCALTIMESTAMP
-                    WHERE uuid = $1 AND delete_at IS NULL
+                    WHERE uuid = $1 AND deleted_at IS NULL
                     ''',
                     product_id,
                     product.generic_name,
@@ -89,11 +93,7 @@ class PGProductRepository(ProductRepository):
                     p.uuid, p.generic_name, p.commercial_name, p.description, p.measurement,
                     p.formulation, p.composition, p.reference, p.use, p.status,
                     p.sanitize_method, 
-                    ARRAY(
-                        SELECT pi.image_path
-                        FROM product_images pi
-                        WHERE pi.product_id = p.uuid
-                    ) AS images,
+                    p.image,
                     p.created_at, p.updated_at,
                     b.uuid AS brand_uuid, b.name AS brand_name,
                     c.uuid AS category_uuid, c.name AS category_name,
@@ -101,11 +101,11 @@ class PGProductRepository(ProductRepository):
                     ARRAY(
                         SELECT json_build_object(
                             'uuid', o.uuid,
-                            'observation', o.observation
+                            'comment', o.comment
                         )
-                        FROM observations o
+                        FROM comments o
                         WHERE o.product_id = p.uuid
-                    ) AS observations,
+                    ) AS comments,
                     ARRAY(
                         SELECT json_build_object(
                             'uuid', ch.uuid,
@@ -127,7 +127,7 @@ class PGProductRepository(ProductRepository):
                 LEFT JOIN brands b ON p.brand_id = b.uuid
                 LEFT JOIN categories c ON p.category_id = c.uuid
                 LEFT JOIN sanitary_registry sr ON p.sanitary_register_id = sr.uuid
-                WHERE p.uuid = $1 AND p.delete_at IS NULL
+                WHERE p.uuid = $1 AND p.deleted_at IS NULL
                 ''',
                 product_id
             )
@@ -144,22 +144,22 @@ class PGProductRepository(ProductRepository):
                     use=row['use'],
                     status=row['status'],
                     sanitize_method=row['sanitize_method'],
-                    image=row['images'],  # Lista de URLs de imágenes
+                    image=row['image'],
                     brands=Brand(uuid=row['brand_uuid'], name=row['brand_name']),
                     categories=Category(uuid=row['category_uuid'], name=row['category_name']),
                     sanitary_register=SanitaryRegistry(uuid=row['sanitary_register_uuid'],
                                                        number_registry=row['number_registry']),
-                    observations=[
-                        Comment(uuid=o['uuid'], observation=o['observation'])
+                    comments=[
+                        Comments(uuid=o['uuid'], comment=o['observation']).to_dict()
                         for o in row['observations']
                     ],
                     characteristics=[
                         Characteristic(uuid=ch['uuid'], characteristic=ch['characteristic'],
-                                       description=ch['description'])
+                                       description=ch['description']).to_dict()
                         for ch in row['characteristics']
                     ],
                     technical_sheets=[
-                        TechnicalSheet(uuid=ts['uuid'], document=ts['document'])
+                        TechnicalSheet(uuid=ts['uuid'], url=ts['document']).to_dict()
                         for ts in row['technical_sheets']
                     ],
                     created_at=row['created_at'],
@@ -238,9 +238,9 @@ class PGProductRepository(ProductRepository):
                 LEFT JOIN brands b ON p.brand_id = b.uuid
                 LEFT JOIN categories c ON p.category_id = c.uuid
                 LEFT JOIN sanitary_registry sr ON p.sanitary_register_id = sr.uuid
-                LEFT JOIN brand_providers bp ON bp.brand_id = b.uuid
-                LEFT JOIN providers pr ON bp.provider_id = pr.uuid
-                WHERE p.delete_at IS NULL
+                LEFT JOIN brand_providers bp ON bp.brand_uuid = b.uuid
+                LEFT JOIN providers pr ON bp.provider_uuid = pr.uuid
+                WHERE p.deleted_at IS NULL
             '''
 
             conditions = []

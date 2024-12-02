@@ -5,11 +5,19 @@ from lucy.infrastructure.repositories.pg_repositories.pg_pool import get_pool
 
 
 class PGCharacteristicRepository(CharacteristicRepository):
-    async def update(self, product_id: str, characteristics: Characteristic):
+    async def get_all(self):
+        pass
+
+    async def get_by_id(self, product_id: str):
+        pass
+
+    async def delete(self, product_id: str):
+        pass
+
+    async def update(self, product_id: str, characteristics: list):
         pool = get_pool()
         async with pool.acquire() as connection:
             async with connection.transaction():
-                # Elimina las características existentes
                 await connection.execute(
                     '''
                     DELETE FROM characteristics WHERE product_id = $1
@@ -19,8 +27,8 @@ class PGCharacteristicRepository(CharacteristicRepository):
                 for characteristic in characteristics:
                     await connection.execute(
                         '''
-                        INSERT INTO characteristics (uuid, product_id, characteristic, description, created_at)
-                        VALUES (gen_random_uuid(), $1, $2, $3, LOCALTIMESTAMP)
+                        INSERT INTO characteristics (uuid, product_id, characteristic, description, created_at, updated_at)
+                        VALUES (gen_random_uuid(), $1, $2, $3, LOCALTIMESTAMP, LOCALTIMESTAMP)
                         ''',
                         product_id,
                         characteristic.characteristic,

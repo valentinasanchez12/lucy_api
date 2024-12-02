@@ -24,6 +24,7 @@ required_fields = ['name']
 async def save(request: Request):
     try:
         data = await request.json()
+        print(data)
         validation = validate_data(data, required_fields)
         if not validation["is_valid"]:
             return JSONResponse(
@@ -41,7 +42,7 @@ async def save(request: Request):
         use_case = BrandUseCase(repository=PGBrandRepository(), brand=brand_data)
         created_brand = await use_case.create()
         return JSONResponse(
-            status_code=200,
+            status_code=201,
             content={
                 'data': created_brand,
                 'success': True,

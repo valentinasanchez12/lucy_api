@@ -11,8 +11,8 @@ class Provider(Entity):
     _email = fields.StrField()
     _brands = fields.ListField()
     _created_at = fields.DatetimeField()
-    _update_at = fields.DatetimeField()
-    _delete_at = fields.DatetimeField()
+    _updated_at = fields.DatetimeField()
+    _deleted_at = fields.DatetimeField()
 
     def add_brand(self, brand: Brand):
         self._brands.append(brand)
@@ -24,7 +24,8 @@ class Provider(Entity):
             "represent": self._represent if self._represent else None,
             "phone": self._phone if self._phone else None,
             "email": self._email if self._email else None,
-            "created_at": self._created_at if self._created_at else None,
-            "update_at": self._update_at if self._update_at else None,
-            "delete_at": self._delete_at if self._delete_at else None,
+            "brands": self._brands if self._brands else None,
+            "created_at": self._created_at.isoformat() if self._created_at else None,
+            "updated_at": self._updated_at.isoformat() if self._updated_at else None,
+            "deleted_at": self._deleted_at.isoformat() if self._deleted_at else None,
         }

@@ -11,9 +11,10 @@ class PGSanitaryRegistryRepository(SanitaryRegistryRepository):
         async with pool.acquire() as connection:
             rows = await connection.fetch(
                 '''
-                SELECT uuid, documents AS url, number_registry, expiration_date, cluster, status, type_risk, created_at, updated_at, delete_at
+                SELECT uuid, url, number_registry, expiration_date, cluster, 
+                status, type_risk, created_at, updated_at, deleted_at
                 FROM sanitary_registry
-                WHERE delete_at IS NULL
+                WHERE deleted_at IS NULL
                 '''
             )
             return [
@@ -26,8 +27,8 @@ class PGSanitaryRegistryRepository(SanitaryRegistryRepository):
                     status=row['status'],
                     type_risk=row['type_risk'],
                     created_at=row['created_at'],
-                    update_at=row['updated_at'],
-                    delete_at=row['delete_at'],
+                    updated_at=row['updated_at'],
+                    deleted_at=row['deleted_at'],
                 )
                 for row in rows
             ]
@@ -37,9 +38,10 @@ class PGSanitaryRegistryRepository(SanitaryRegistryRepository):
         async with pool.acquire() as connection:
             row = await connection.fetchrow(
                 '''
-                SELECT uuid, documents AS url, number_registry, expiration_date, cluster, status, type_risk, created_at, updated_at, delete_at
+                SELECT uuid, url, number_registry, expiration_date, cluster, 
+                status, type_risk, created_at, updated_at, deleted_at
                 FROM sanitary_registry
-                WHERE uuid = $1 AND delete_at IS NULL
+                WHERE uuid = $1 AND deleted_at IS NULL
                 ''',
                 registry_id
             )
@@ -53,8 +55,8 @@ class PGSanitaryRegistryRepository(SanitaryRegistryRepository):
                     status=row['status'],
                     type_risk=row['type_risk'],
                     created_at=row['created_at'],
-                    update_at=row['updated_at'],
-                    delete_at=row['delete_at'],
+                    updated_at=row['updated_at'],
+                    deleted_at=row['deleted_at'],
                 )
             return None
 
@@ -65,23 +67,24 @@ class PGSanitaryRegistryRepository(SanitaryRegistryRepository):
                 '''
                 UPDATE sanitary_registry
                 SET
-                    documents = COALESCE($2, documents),
+                    url = COALESCE($2, url),
                     number_registry = COALESCE($3, number_registry),
                     expiration_date = COALESCE($4, expiration_date),
                     cluster = COALESCE($5, cluster),
                     status = COALESCE($6, status),
                     type_risk = COALESCE($7, type_risk),
                     updated_at = LOCALTIMESTAMP
-                WHERE uuid = $1 AND delete_at IS NULL
-                RETURNING uuid, documents AS url, number_registry, expiration_date, cluster, status, type_risk, created_at, updated_at, delete_at
+                WHERE uuid = $1 AND deleted_at IS NULL
+                RETURNING uuid, url, number_registry, expiration_date, cluster, 
+                status, type_risk, created_at, updated_at, deleted_at
                 ''',
                 registry_id,
-                sanitary_registry._url,
-                sanitary_registry._number_registry,
-                sanitary_registry._expiration_date,
-                sanitary_registry._cluster,
-                sanitary_registry._status,
-                sanitary_registry._type_risk,
+                sanitary_registry.url,
+                sanitary_registry.number_registry,
+                sanitary_registry.expiration_date,
+                sanitary_registry.cluster,
+                sanitary_registry.status,
+                sanitary_registry.type_risk,
             )
             if row:
                 return SanitaryRegistry(
@@ -93,8 +96,8 @@ class PGSanitaryRegistryRepository(SanitaryRegistryRepository):
                     status=row['status'],
                     type_risk=row['type_risk'],
                     created_at=row['created_at'],
-                    update_at=row['updated_at'],
-                    delete_at=row['delete_at'],
+                    updated_at=row['updated_at'],
+                    deleted_at=row['deleted_at'],
                 )
             return None
 
@@ -104,9 +107,10 @@ class PGSanitaryRegistryRepository(SanitaryRegistryRepository):
             row = await connection.fetchrow(
                 '''
                 UPDATE sanitary_registry
-                SET delete_at = LOCALTIMESTAMP
-                WHERE uuid = $1 AND delete_at IS NULL
-                RETURNING uuid, documents AS url, number_registry, expiration_date, cluster, status, type_risk, created_at, updated_at, delete_at
+                SET deleted_at = LOCALTIMESTAMP
+                WHERE uuid = $1 AND deleted_at IS NULL
+                RETURNING uuid, url, number_registry, expiration_date, cluster, 
+                status, type_risk, created_at, updated_at, deleted_at
                 ''',
                 registry_id
             )
@@ -120,8 +124,8 @@ class PGSanitaryRegistryRepository(SanitaryRegistryRepository):
                     status=row['status'],
                     type_risk=row['type_risk'],
                     created_at=row['created_at'],
-                    update_at=row['updated_at'],
-                    delete_at=row['delete_at'],
+                    updated_at=row['updated_at'],
+                    deleted_at=row['deleted_at'],
                 )
             return None
 
@@ -131,12 +135,12 @@ class PGSanitaryRegistryRepository(SanitaryRegistryRepository):
             row = await connection.fetchrow(
                 '''
                 INSERT INTO sanitary_registry
-                (uuid, documents, number_registry, expiration_date, cluster, status, type_risk, created_at, updated_at)
+                (uuid, url, number_registry, expiration_date, cluster, status, type_risk, created_at, updated_at)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, LOCALTIMESTAMP, LOCALTIMESTAMP)
-                RETURNING uuid, documents, number_registry, expiration_date, cluster, status, type_risk, created_at, updated_at
+                RETURNING uuid, url, number_registry, expiration_date, cluster, status, type_risk, created_at, updated_at
                 ''',
                 sanitary_registry.uuid,
-                sanitary_registry.documents,
+                sanitary_registry.url,
                 sanitary_registry.number_registry,
                 sanitary_registry.expiration_date,
                 sanitary_registry.cluster,
@@ -146,14 +150,14 @@ class PGSanitaryRegistryRepository(SanitaryRegistryRepository):
             if row:
                 return SanitaryRegistry(
                     uuid=row['uuid'],
-                    url=row['documents'],
+                    url=row['url'],
                     number_registry=row['number_registry'],
                     expiration_date=row['expiration_date'],
                     cluster=row['cluster'],
                     status=row['status'],
                     type_risk=row['type_risk'],
                     created_at=row['created_at'],
-                    update_at=row['updated_at'],
-                    delete_at=None
+                    updated_at=row['updated_at'],
+                    deleted_at=None
                 )
             return None

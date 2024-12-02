@@ -10,8 +10,8 @@ class SanitaryRegistry(Entity):
     _status = fields.StrField()
     _type_risk = fields.StrField()
     _created_at = fields.DatetimeField()
-    _update_at = fields.DatetimeField()
-    _delete_at = fields.DatetimeField()
+    _updated_at = fields.DatetimeField()
+    _deleted_at = fields.DatetimeField()
 
     def to_dict(self) -> dict:
         return {
@@ -22,7 +22,7 @@ class SanitaryRegistry(Entity):
             "cluster": self._cluster if self._cluster else None,
             "status": self._status if self._status else None,
             "type_risk": self._type_risk if self._type_risk else None,
-            "created_at": self._created_at if self._created_at else None,
-            "update_at": self._update_at if self._update_at else None,
-            "delete_at": self._delete_at if self._delete_at else None,
+            "created_at": self._created_at.isoformat() if self._created_at else None,
+            "updated_at": self._updated_at.isoformat() if self._updated_at else None,
+            "deleted_at": self._deleted_at.isoformat() if self._deleted_at else None,
         }

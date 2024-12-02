@@ -13,18 +13,18 @@ class PGCommentRepository(CommentRepository):
                 '''
                 SELECT uuid, comment, product_id, created_at, updated_at
                 FROM comments
-                WHERE product_id = $1 AND delete_at IS NULL
+                WHERE product_id = $1 AND deleted_at IS NULL
                 ORDER BY created_at DESC
                 ''',
                 product_id
             )
             return [
                 Comments(
-                    _uuid=row["uuid"],
-                    _comment=row["comment"],
-                    _product={"uuid": row["product_id"]},
-                    _created_at=row["created_at"],
-                    _update_at=row["updated_at"]
+                    uuid=row["uuid"],
+                    comment=row["comment"],
+                    product={"uuid": row["product_id"]},
+                    created_at=row["created_at"],
+                    updated_at=row["updated_at"]
                 )
                 for row in rows
             ]

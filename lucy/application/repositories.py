@@ -192,7 +192,7 @@ class CharacteristicRepository(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def update(self, product_id: str, characteristics: Characteristic):
+    async def update(self, product_id: str, characteristics: list):
         pass
 
     @abstractmethod
