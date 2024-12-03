@@ -26,6 +26,7 @@ required_fields = ['number_registry', 'expiration_date', 'cluster', 'status', 't
 async def save(request: Request):
     try:
         data = await request.json()
+        print(data)
 
         validation = validate_data(data, required_fields)
         if not validation["is_valid"]:
@@ -74,6 +75,7 @@ async def save(request: Request):
             },
         )
     except Exception as e:
+        print(e)
         return JSONResponse(
             status_code=500,
             content={

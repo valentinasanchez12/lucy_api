@@ -12,17 +12,17 @@ class PGCategoryRepository(CategoryRepository):
         async with pool.acquire() as connection:
             rows = await connection.fetch(
                 '''
-                SELECT uuid, name, created_at, updated_at, delete_at
+                SELECT uuid, name, created_at, updated_at, deleted_at
                 FROM categories
-                WHERE delete_at IS NULL
+                WHERE deleted_at IS NULL
                 '''
             )
             return [Category(
                 uuid=row['uuid'],
                 name=row['name'],
                 created_at=row['created_at'],
-                update_at=row['updated_at'],
-                delete_at=row['delete_at']
+                updated_at=row['updated_at'],
+                deleted_at=row['deleted_at']
             ) for row in rows]
 
     async def get_by_id(self, category_id: str):
@@ -30,19 +30,19 @@ class PGCategoryRepository(CategoryRepository):
         async with pool.acquire() as connection:
             row = await connection.fetchrow(
                 '''
-                SELECT uuid, name, created_at, updated_at, delete_at
+                SELECT uuid, name, created_at, updated_at, deleted_at
                 FROM categories
-                WHERE uuid = $1 AND delete_at IS NULL
+                WHERE uuid = $1 AND deleted_at IS NULL
                 ''',
                 category_id
             )
             if row:
                 return Category(
-                    _uuid=row['uuid'],
-                    _name=row['name'],
-                    _created_at=row['created_at'],
-                    _update_at=row['updated_at'],
-                    _delete_at=row['delete_at']
+                    uuid=row['uuid'],
+                    name=row['name'],
+                    created_at=row['created_at'],
+                    updated_at=row['updated_at'],
+                    deleted_at=row['deleted_at']
                 )
             return None
 
@@ -54,19 +54,19 @@ class PGCategoryRepository(CategoryRepository):
                 UPDATE categories
                 SET name = COALESCE($2, name),
                     updated_at = LOCALTIMESTAMP
-                WHERE uuid = $1 AND delete_at IS NULL
-                RETURNING uuid, name, created_at, updated_at, delete_at
+                WHERE uuid = $1 AND deleted_at IS NULL
+                RETURNING uuid, name, created_at, updated_at, deleted_at
                 ''',
                 category_id,
                 category._name
             )
             if row:
                 return Category(
-                    _uuid=row['uuid'],
-                    _name=row['name'],
-                    _created_at=row['created_at'],
-                    _update_at=row['updated_at'],
-                    _delete_at=row['delete_at']
+                    uuid=row['uuid'],
+                    name=row['name'],
+                    created_at=row['created_at'],
+                    updated_at=row['updated_at'],
+                    deleted_at=row['deleted_at']
                 )
             return None
 
@@ -76,19 +76,19 @@ class PGCategoryRepository(CategoryRepository):
             row = await connection.fetchrow(
                 '''
                 UPDATE categories
-                SET delete_at = LOCALTIMESTAMP
-                WHERE uuid = $1 AND delete_at IS NULL
-                RETURNING uuid, name, created_at, updated_at, delete_at
+                SET deleted_at = LOCALTIMESTAMP
+                WHERE uuid = $1 AND deleted_at IS NULL
+                RETURNING uuid, name, created_at, updated_at, deleted_at
                 ''',
                 category_id
             )
             if row:
                 return Category(
-                    _uuid=row['uuid'],
-                    _name=row['name'],
-                    _created_at=row['created_at'],
-                    _update_at=row['updated_at'],
-                    _delete_at=row['delete_at']
+                    uuid=row['uuid'],
+                    name=row['name'],
+                    created_at=row['created_at'],
+                    updated_at=row['updated_at'],
+                    deleted_at=row['deleted_at']
                 )
             return None
 
