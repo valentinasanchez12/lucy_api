@@ -26,7 +26,6 @@ required_fields = ['number_registry', 'expiration_date', 'cluster', 'status', 't
 async def save(request: Request):
     try:
         data = await request.json()
-        print(data)
 
         validation = validate_data(data, required_fields)
         if not validation["is_valid"]:
@@ -41,10 +40,10 @@ async def save(request: Request):
 
         file_service = FileService(upload_dir='static/sanitary_register')
         file_path = file_service.upload_file(data['file_name'], data['file_content'])
-
+        static_url = request.url_for("static", path=file_path)
         sanitary_registry_data = SanitaryRegistry(
             uuid=uuid.uuid4(),
-            url=file_path,
+            url=static_url,
             number_registry=data.get('number_registry'),
             expiration_date=data.get('expiration_date'),
             cluster=data.get('cluster'),
@@ -169,10 +168,13 @@ async def update(request: Request):
                     "response": "No data provided for update.",
                 },
             )
-
+        static_url = None
         file_service = FileService(upload_dir="static/sanitary_register")
+        if "file_name" in data and "file_content" in data:
+            file_path = file_service.upload_file(data["file_name"], data["file_content"])
+            static_url = request.url_for("static", path=file_path)
         use_case = SanitaryRegistryUseCase(repository=PGSanitaryRegistryRepository())
-        updated_registry = await use_case.update(registry_id, data, file_service)
+        updated_registry = await use_case.update(registry_id, data, static_url)
 
         if updated_registry:
             return JSONResponse(

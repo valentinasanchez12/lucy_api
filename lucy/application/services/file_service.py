@@ -14,4 +14,5 @@ class FileService:
         file = File(file_name, file_content)
         file_path = os.path.join(self.upload_dir, file_name)
         file.save_to_path(file_path)
-        return file_path
+        relative_path = os.path.relpath(file_path, start='static').replace('\\', '/')
+        return relative_path

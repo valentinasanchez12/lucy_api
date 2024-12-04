@@ -10,7 +10,8 @@ class SanitaryRegistryUseCase:
 
     async def create(self):
         inserted_registry = await self._repository.save(sanitary_registry=self._sanitary_registry)
-        return inserted_registry.to_dic() if inserted_registry else None
+        print('inserted_registry', inserted_registry)
+        return inserted_registry.to_dict() if inserted_registry else None
 
     async def get_all(self):
         sanitary_registries = await self._repository.get_all()
@@ -20,15 +21,10 @@ class SanitaryRegistryUseCase:
         sanitary_registry = await self._repository.get_by_id(registry_id)
         return sanitary_registry.to_dict() if sanitary_registry else None
 
-    async def update(self, registry_id: str, update_data: dict, file_service):
-        file_path = None
-
-        if "file_name" in update_data and "file_content" in update_data:
-            file_path = file_service.upload_file(update_data["file_name"], update_data["file_content"])
-
+    async def update(self, registry_id: str, update_data: dict, static_url):
         sanitary_registry = SanitaryRegistry(
             uuid=registry_id,
-            url=file_path,
+            url=static_url,
             number_registry=update_data.get("number_registry"),
             expiration_date=update_data.get("expiration_date"),
             cluster=update_data.get("cluster"),

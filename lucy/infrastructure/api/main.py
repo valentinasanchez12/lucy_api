@@ -2,6 +2,7 @@ from starlette.applications import Starlette
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import PlainTextResponse
 from starlette.routing import Route, Mount
+from starlette.staticfiles import StaticFiles
 
 from lucy.infrastructure.api.v1.endpoints.brand.brand import brand
 from lucy.infrastructure.api.v1.endpoints.category.category import category
@@ -24,6 +25,7 @@ routes = [
     Mount('/api/brand', routes=brand.routes),
     Mount('/api/product', routes=product.routes),
     Mount('/api/comments', routes=comment.routes),
+    Mount('/static', app=StaticFiles(directory='static'), name='static'),
 
 ]
 

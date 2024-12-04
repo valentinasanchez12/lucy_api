@@ -18,7 +18,7 @@ class SanitaryRegistry(Entity):
             "uuid": self._uuid if self._uuid else None,
             "url": self._url if self._url else None,
             "number_registry": self._number_registry if self._number_registry else None,
-            "expiration_date": self._expiration_date if self._expiration_date else None,
+            "expiration_date": self._expiration_date.isoformat() if self._expiration_date else None,
             "cluster": self._cluster if self._cluster else None,
             "status": self._status if self._status else None,
             "type_risk": self._type_risk if self._type_risk else None,
