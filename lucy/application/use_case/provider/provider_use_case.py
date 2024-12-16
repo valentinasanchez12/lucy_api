@@ -39,6 +39,8 @@ class ProviderUseCase:
 
     async def update(self, uuid, update_data):
         provider = Provider(
+            types_person=update_data.get('types_person'),
+            nit=update_data.get('nit'),
             name=update_data.get('name'),
             represent=update_data.get('represent'),
             phone=update_data.get('phone'),

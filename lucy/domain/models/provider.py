@@ -5,6 +5,8 @@ from lucy.domain.models.brand import Brand
 
 class Provider(Entity):
     _uuid = fields.StrField()
+    _types_person = fields.StrField()
+    _nit = fields.StrField()
     _name = fields.StrField()
     _represent = fields.StrField()
     _phone = fields.StrField()
@@ -20,6 +22,8 @@ class Provider(Entity):
     def to_dict(self) -> dict:
         return {
             "uuid": self._uuid if self._uuid else None,
+            "types_person": self._types_person if self._types_person else None,
+            "nit": self._nit if self._nit else None,
             "name": self._name if self._name else None,
             "represent": self._represent if self._represent else None,
             "phone": self._phone if self._phone else None,

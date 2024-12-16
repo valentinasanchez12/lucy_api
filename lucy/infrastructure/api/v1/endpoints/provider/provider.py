@@ -1,5 +1,4 @@
 import uuid
-from typing import Any
 
 from starlette.applications import Starlette
 from starlette.requests import Request
@@ -41,6 +40,8 @@ async def save(request: Request):
 
         provider_data = Provider(
             uuid=str(uuid.uuid4()),
+            types_person=data['types_person'],
+            nit=data['nit'],
             name=data['name'],
             represent=data['represent'],
             phone=data['phone'],

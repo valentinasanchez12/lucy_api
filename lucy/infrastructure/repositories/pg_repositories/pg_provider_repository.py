@@ -11,11 +11,13 @@ class PGProviderRepository(ProviderRepository):
         async with pool.acquire() as connection:
             inserted_row = await connection.fetchrow(
                 '''
-                    insert into providers (uuid, name, represent, phone, email, created_at, updated_at)
-                    values ($1, $2, $3, $4, $5, LOCALTIMESTAMP, LOCALTIMESTAMP)
-                    returning uuid, name, represent, phone, email, created_at, updated_at
+                    insert into providers (uuid, types_person, nit, name, represent, phone, email, created_at, updated_at)
+                    values ($1, $2, $3, $4, $5, $6,$7, LOCALTIMESTAMP, LOCALTIMESTAMP)
+                    returning uuid, types_person, nit, name, represent, phone, email, created_at, updated_at
                 ''',
                 provider.uuid,
+                provider.types_person,
+                provider.nit,
                 provider.name,
                 provider.represent,
                 provider.phone,
@@ -23,6 +25,8 @@ class PGProviderRepository(ProviderRepository):
             )
             return Provider(
                 uuid=inserted_row['uuid'],
+                types_person=inserted_row['types_person'],
+                nit=inserted_row['nit'],
                 name=inserted_row['name'],
                 represent=inserted_row['represent'],
                 phone=inserted_row['phone'],
@@ -37,6 +41,8 @@ class PGProviderRepository(ProviderRepository):
                 '''
                 SELECT 
                     p.uuid AS provider_uuid,
+                    p.types_person,
+                    p.nit,
                     p.name AS provider_name,
                     p.represent,
                     p.phone,
@@ -64,6 +70,8 @@ class PGProviderRepository(ProviderRepository):
                     providers_dict[provider_id] = {
                         "provider": Provider(
                             uuid=row['provider_uuid'],
+                            types_person=row['types_person'],
+                            nit=row['nit'],
                             name=row['provider_name'],
                             represent=row['represent'],
                             phone=row['phone'],
@@ -100,6 +108,8 @@ class PGProviderRepository(ProviderRepository):
                 '''
                 SELECT 
                     p.uuid AS provider_uuid,
+                    p.types_person,
+                    p.nit,
                     p.name AS provider_name,
                     p.represent,
                     p.phone,
@@ -130,6 +140,8 @@ class PGProviderRepository(ProviderRepository):
                 if provider_data is None:
                     provider_data = Provider(
                         uuid=row['provider_uuid'],
+                        types_person=row['types_person'],
+                        nit=row['nit'],
                         name=row['provider_name'],
                         represent=row['represent'],
                         phone=row['phone'],
@@ -160,15 +172,19 @@ class PGProviderRepository(ProviderRepository):
                 '''
                 UPDATE providers
                 SET name = COALESCE($2, name),
-                    represent = COALESCE($3, represent),
-                    phone = COALESCE($4, phone),
-                    email = COALESCE($5, email),
+                    types_person = COALESCE($3, types_person),
+                    nit = COALESCE($4, nit),
+                    represent = COALESCE($5, represent),
+                    phone = COALESCE($6, phone),
+                    email = COALESCE($7, email),
                     updated_at = LOCALTIMESTAMP
                 WHERE uuid = $1 AND deleted_at IS NULL
                 RETURNING uuid, name, represent, phone, email, created_at, updated_at, deleted_at
                 ''',
                 uuid,
                 provider.name,
+                provider.types_person,
+                provider.nit,
                 provider.represent,
                 provider.phone,
                 provider.email
@@ -177,6 +193,8 @@ class PGProviderRepository(ProviderRepository):
                 return Provider(
                     uuid=row['uuid'],
                     name=row['name'],
+                    types_person=row['types_person'],
+                    nit=row['nit'],
                     represent=row['represent'],
                     phone=row['phone'],
                     email=row['email'],
@@ -202,7 +220,7 @@ class PGProviderRepository(ProviderRepository):
                     UPDATE providers
                     SET deleted_at = LOCALTIMESTAMP
                     WHERE uuid = $1 AND deleted_at IS NULL
-                    RETURNING uuid, name, represent, phone, email, created_at, updated_at, deleted_at
+                    RETURNING uuid, types_person, nit, name, represent, phone, email, created_at, updated_at, deleted_at
                     ''',
                     uuid
                 )
@@ -210,6 +228,8 @@ class PGProviderRepository(ProviderRepository):
                     return Provider(
                         uuid=row['uuid'],
                         name=row['name'],
+                        types_person=row['types_person'],
+                        nit=row['nit'],
                         represent=row['represent'],
                         phone=row['phone'],
                         email=row['email'],
