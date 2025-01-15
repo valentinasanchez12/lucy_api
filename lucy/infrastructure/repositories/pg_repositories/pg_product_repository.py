@@ -281,7 +281,8 @@ class PGProductRepository(ProductRepository):
                                 p.sanitize_method, p.image, p.created_at, p.updated_at,
                                 b.uuid AS brand_uuid, b.name AS brand_name,
                                 c.uuid AS category_uuid, c.name AS category_name,
-                                sr.uuid AS sanitary_register_uuid, sr.number_registry
+                                sr.uuid AS sanitary_register_uuid, sr.number_registry,
+                                pr.uuid AS provider_uuid, pr.name AS provider_name
                 FROM products p
                 LEFT JOIN brands b ON p.brand_id = b.uuid
                 LEFT JOIN categories c ON p.category_id = c.uuid
@@ -293,37 +294,42 @@ class PGProductRepository(ProductRepository):
 
             conditions = []
             params = []
+
+            # Filtros específicos
             if "brand" in filters:
-                conditions.append("LOWER(b.name) LIKE $1")
+                conditions.append(f"LOWER(b.name) LIKE ${len(params) + 1}")
                 params.append(f"%{filters['brand'].lower()}%")
             if "category" in filters:
-                conditions.append("LOWER(c.name) LIKE $1")
+                conditions.append(f"LOWER(c.name) LIKE ${len(params) + 1}")
                 params.append(f"%{filters['category'].lower()}%")
             if "sanitary_registry" in filters:
-                conditions.append("LOWER(sr.number_registry) LIKE $1")
+                conditions.append(f"LOWER(sr.number_registry) LIKE ${len(params) + 1}")
                 params.append(f"%{filters['sanitary_registry'].lower()}%")
             if "provider" in filters:
-                conditions.append("LOWER(pr.name) LIKE $1")
+                conditions.append(f"LOWER(pr.name) LIKE ${len(params) + 1}")
                 params.append(f"%{filters['provider'].lower()}%")
             if "general" in filters:
                 general_conditions = '''
-                    LOWER(p.generic_name) LIKE $1 OR
-                    LOWER(p.commercial_name) LIKE $1 OR
-                    LOWER(p.description) LIKE $1 OR
-                    LOWER(p.measurement) LIKE $1 OR
-                    LOWER(p.formulation) LIKE $1 OR
-                    LOWER(p.composition) LIKE $1 OR
-                    LOWER(p.reference) LIKE $1 OR
-                    LOWER(p.use) LIKE $1 OR
-                    LOWER(p.status) LIKE $1 OR
-                    LOWER(p.sanitize_method) LIKE $1
+                    LOWER(p.generic_name) LIKE ${index} OR
+                    LOWER(p.commercial_name) LIKE ${index} OR
+                    LOWER(p.description) LIKE ${index} OR
+                    LOWER(p.measurement) LIKE ${index} OR
+                    LOWER(p.formulation) LIKE ${index} OR
+                    LOWER(p.composition) LIKE ${index} OR
+                    LOWER(p.reference) LIKE ${index} OR
+                    LOWER(p.use) LIKE ${index} OR
+                    LOWER(p.status) LIKE ${index} OR
+                    LOWER(p.sanitize_method) LIKE ${index}
                 '''
+                general_conditions = general_conditions.replace("${index}", f"${len(params) + 1}")
                 conditions.append(f"({general_conditions})")
                 params.append(f"%{filters['general'].lower()}%")
 
+            # Agregar condiciones al SQL
             if conditions:
                 sql += " AND " + " AND ".join(conditions)
 
+            # Ejecutar consulta
             rows = await connection.fetch(sql, *params)
 
             return [
@@ -332,8 +338,12 @@ class PGProductRepository(ProductRepository):
                     "generic_name": row["generic_name"],
                     "commercial_name": row["commercial_name"],
                     "description": row["description"],
-                    "image": row["image"][0] if row["image"] else None,
-                    "brand": {"uuid": str(row["brand_uuid"]), "name": row["brand_name"]}
+                    "image": row["image"],
+                    "brand": {"uuid": str(row["brand_uuid"]), "name": row["brand_name"]},
+                    "category": {"uuid": str(row["category_uuid"]), "name": row["category_name"]},
+                    "sanitary_registry": {"uuid": str(row["sanitary_register_uuid"]),
+                                          "number_registry": row["number_registry"]},
+                    "provider": {"uuid": str(row["provider_uuid"]), "name": row["provider_name"]}
                 }
                 for row in rows
             ]
@@ -341,16 +351,26 @@ class PGProductRepository(ProductRepository):
     def _parse_query(self, query: str):
         filters = {}
         query = query.lower()
-        value = query.split(' ')
-        search = ' '.join(value[2:])
+
+        # Identificar los filtros
         if "in: marca" in query:
-            filters["brand"] = search
+            brand_value = query.split("in: marca")[1].split("in:")[0].strip().strip("'")
+            filters["brand"] = brand_value
         if "in: categoría" in query:
-            filters["category"] = search
+            category_value = query.split("in: categoría")[1].split("in:")[0].strip().strip("'")
+            filters["category"] = category_value
         if "in: registro sanitario" in query:
-            filters["sanitary_registry"] = search
+            sanitary_value = query.split("in: registro sanitario")[1].split("in:")[0].strip().strip("'")
+            filters["sanitary_registry"] = sanitary_value
         if "in: proveedor" in query:
-            filters["provider"] = search
-        if not any(key in query for key in ["in: marca", "in: categoría", "in: registro sanitario", "in: proveedor"]):
-            filters["general"] = query
+            provider_value = query.split("in: proveedor")[1].split("in:")[0].strip().strip("'")
+            filters["provider"] = provider_value
+        if "in: producto" in query:
+            product_value = query.split("in: producto")[1].split("in:")[0].strip().strip("'")
+            filters["general"] = product_value
+
+        # Si no hay `in:` buscar en general
+        if not filters:
+            filters["general"] = query.strip()
+
         return filters
