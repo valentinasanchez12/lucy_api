@@ -17,7 +17,8 @@ class Provider(Entity):
     _deleted_at = fields.DatetimeField()
 
     def add_brand(self, brand: Brand):
-        self._brands.append(brand)
+        data = [brand]
+        self._brands = data
 
     def to_dict(self) -> dict:
         return {

@@ -37,6 +37,9 @@ async def save(request: Request):
                     'response': f"Missing Parameters: {', '.join(validation['missing'])}"
                 }
             )
+        brand_data = []
+        for brand in data['brands']:
+            brand_data.append(Brand(**brand))
 
         provider_data = Provider(
             uuid=str(uuid.uuid4()),
@@ -45,17 +48,16 @@ async def save(request: Request):
             name=data['name'],
             represent=data['represent'],
             phone=data['phone'],
-            email=data['email']
+            email=data['email'],
+            brands=brand_data
         )
-        for brand in data['brands']:
-            provider_data.add_brand(Brand(**brand))
 
         use_case = ProviderUseCase(repository=PGProviderRepository(), provider=provider_data)
         provider_add = await use_case.create()
         if provider_add:
             brand_provider = BrandProviderUseCase(PGBrandProviderRepository())
-            await brand_provider.save(brand=provider_data.brands, provider=provider_add.product)
-        provider_add['brands'] = provider_data.brands
+            await brand_provider.save(brands=provider_data.brands, provider=provider_data)
+        provider_add['brands'] = [brand.to_dict() for brand in provider_data.brands]
         return JSONResponse(
             status_code=200,
             content={
@@ -66,6 +68,7 @@ async def save(request: Request):
         )
 
     except Exception as e:
+        print(str(e))
         return JSONResponse(
             status_code=500,
             content={
@@ -157,7 +160,7 @@ async def update_provider(request: Request):
                     'response': f"Missing Parameters: {', '.join(validation['missing'])}"
                 }
             )
-
+        print(data)
         brand_provider_repository = PGBrandProviderRepository()
         brand_provider_use_case = BrandProviderUseCase(repository=brand_provider_repository)
         provider_use_case = ProviderUseCase(
@@ -186,6 +189,7 @@ async def update_provider(request: Request):
                 }
             )
     except Exception as e:
+        print(e)
         return JSONResponse(
             status_code=500,
             content={

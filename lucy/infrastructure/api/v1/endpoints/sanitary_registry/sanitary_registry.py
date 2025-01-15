@@ -34,7 +34,7 @@ async def save(request: Request):
                 content={
                     'data': None,
                     "success": False,
-                    "response": f"Missing parameters: {', '.join(validation['missing_fields'])}",
+                    "response": f"Missing parameters: {', '.join(validation['missing'])}",
                 },
             )
 

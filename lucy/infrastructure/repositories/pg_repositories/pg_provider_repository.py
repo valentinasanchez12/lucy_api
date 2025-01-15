@@ -179,7 +179,7 @@ class PGProviderRepository(ProviderRepository):
                     email = COALESCE($7, email),
                     updated_at = LOCALTIMESTAMP
                 WHERE uuid = $1 AND deleted_at IS NULL
-                RETURNING uuid, name, represent, phone, email, created_at, updated_at, deleted_at
+                RETURNING uuid, nit, types_person, name, represent, phone, email, created_at, updated_at, deleted_at
                 ''',
                 uuid,
                 provider.name,
@@ -208,13 +208,6 @@ class PGProviderRepository(ProviderRepository):
         pool = get_pool()
         async with pool.acquire() as connection:
             async with connection.transaction():
-                await connection.execute(
-                    '''
-                    DELETE FROM brand_providers
-                    WHERE provider_uuid = $1
-                    ''',
-                    uuid
-                )
                 row = await connection.fetchrow(
                     '''
                     UPDATE providers

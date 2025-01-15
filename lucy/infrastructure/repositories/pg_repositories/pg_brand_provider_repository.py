@@ -16,13 +16,13 @@ class PGBrandProviderRepository(BrandProviderRepository):
                     ''',
                     provider_id
                 )
-                for brand_id in brands:
+                for brand in brands:
                     await connection.execute(
                         '''
                         INSERT INTO brand_providers (brand_uuid, provider_uuid)
                         VALUES ($1, $2)
                         ''',
-                        brand_id,
+                        brand.get('uuid'),
                         provider_id
                     )
 
@@ -31,7 +31,7 @@ class PGBrandProviderRepository(BrandProviderRepository):
         async with pool.acquire() as connection:
             await connection.fetchrow(
                 '''
-                insert into brand_provider (brand_uuid, provider_uuid)
+                insert into brand_providers (brand_uuid, provider_uuid)
                 values ($1, $2)
                 ''',
                 brand.uuid,

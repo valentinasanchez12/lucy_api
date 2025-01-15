@@ -49,8 +49,8 @@ class ProviderUseCase:
         updated_provider = await self._repository.update(uuid, provider)
 
         if 'brands' in update_data:
-            brand_ids = update_data['brands']
-            await self._brand_provider_use_case.update(uuid, brand_ids)
+            brands = update_data['brands']
+            await self._brand_provider_use_case.update(uuid, brands)
 
         if updated_provider:
             provider_dict = updated_provider.to_dict()

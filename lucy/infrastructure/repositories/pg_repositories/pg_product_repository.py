@@ -1,3 +1,5 @@
+import ast
+
 from lucy.application.repositories import ProductRepository
 from lucy.domain.models.brand import Brand
 from lucy.domain.models.category import Category
@@ -12,26 +14,27 @@ from lucy.infrastructure.repositories.pg_repositories.pg_pool import get_pool
 class PGProductRepository(ProductRepository):
 
     async def get_random(self, limit: int = 12):
+        if not isinstance(limit, int):
+            raise ValueError(f"Invalid limit value: {limit}")
         pool = get_pool()
         async with pool.acquire() as connection:
             rows = await connection.fetch(
-                '''
-                SELECT p.uuid, p.generic_name, p.image, b.uuid AS brand_uuid, b.name AS brand_name
-                FROM products p
-                LEFT JOIN brands b ON p.brand_id = b.uuid
-                WHERE p.deleted_at IS NULL
-                ORDER BY RANDOM()
-                LIMIT $1
+                '''SELECT p.uuid, p.generic_name, p.image, b.uuid AS brand_uuid, b.name AS brand_name
+                    FROM products p
+                    LEFT JOIN brands b ON p.brand_id::text = b.uuid::text
+                    WHERE p.deleted_at IS NULL  
+                    ORDER BY RANDOM()
+                    LIMIT $1
                 ''',
                 limit
             )
             return [
                 {
-                    "uuid": row["uuid"],
+                    "uuid": str(row["uuid"]),
                     "generic_name": row["generic_name"],
-                    "image": row["image"],
+                    "image": row["image"][0] if row["image"] else None,
                     "brand": {
-                        "uuid": row["brand_uuid"],
+                        "uuid": str(row["brand_uuid"]),
                         "name": row["brand_name"]
                     }
                 }
@@ -97,7 +100,7 @@ class PGProductRepository(ProductRepository):
                     p.created_at, p.updated_at,
                     b.uuid AS brand_uuid, b.name AS brand_name,
                     c.uuid AS category_uuid, c.name AS category_name,
-                    sr.uuid AS sanitary_register_uuid, sr.number_registry,
+                    sr.uuid AS sanitary_register_uuid, sr.number_registry, sr.url,
                     ARRAY(
                         SELECT json_build_object(
                             'uuid', o.uuid,
@@ -122,7 +125,21 @@ class PGProductRepository(ProductRepository):
                         )
                         FROM technical_sheets ts
                         WHERE ts.product_id = p.uuid
-                    ) AS technical_sheets
+                    ) AS technical_sheets,
+                    ARRAY(
+                        SELECT json_build_object(
+                            'uuid', pr.uuid,
+                            'nit', pr.nit,
+                            'types_person', pr.types_person,
+                            'name', pr.name,
+                            'represent', pr.represent,
+                            'phone', pr.phone,
+                            'email', pr.email
+                        )
+                        FROM brand_providers bp
+                        INNER JOIN providers pr ON bp.provider_uuid = pr.uuid
+                        WHERE bp.brand_uuid = b.uuid
+                    ) AS providers
                 FROM products p
                 LEFT JOIN brands b ON p.brand_id = b.uuid
                 LEFT JOIN categories c ON p.category_id = c.uuid
@@ -132,6 +149,24 @@ class PGProductRepository(ProductRepository):
                 product_id
             )
             if row:
+                # Convertir comments, characteristics, technical_sheets y providers
+                comments = [
+                    ast.literal_eval(comment) if isinstance(comment, str) else comment
+                    for comment in row['comments']
+                ]
+                characteristics = [
+                    ast.literal_eval(characteristic) if isinstance(characteristic, str) else characteristic
+                    for characteristic in row['characteristics']
+                ]
+                technical_sheets = [
+                    ast.literal_eval(sheet) if isinstance(sheet, str) else sheet
+                    for sheet in row['technical_sheets']
+                ]
+                providers = [
+                    ast.literal_eval(provider) if isinstance(provider, str) else provider
+                    for provider in row['providers']
+                ]
+
                 return Product(
                     uuid=row['uuid'],
                     generic_name=row['generic_name'],
@@ -144,23 +179,36 @@ class PGProductRepository(ProductRepository):
                     use=row['use'],
                     status=row['status'],
                     sanitize_method=row['sanitize_method'],
-                    image=row['image'],
-                    brands=Brand(uuid=row['brand_uuid'], name=row['brand_name']),
-                    categories=Category(uuid=row['category_uuid'], name=row['category_name']),
+                    images=row['image'],
+                    brand=Brand(uuid=row['brand_uuid'], name=row['brand_name']),
+                    category=Category(uuid=row['category_uuid'], name=row['category_name']),
                     sanitary_register=SanitaryRegistry(uuid=row['sanitary_register_uuid'],
-                                                       number_registry=row['number_registry']),
+                                                       number_registry=row['number_registry'],
+                                                       url=row['url']),
                     comments=[
-                        Comments(uuid=o['uuid'], comment=o['observation']).to_dict()
-                        for o in row['observations']
+                        Comments(uuid=comment['uuid'], comment=comment['comment']).to_dict()
+                        for comment in comments
                     ],
                     characteristics=[
                         Characteristic(uuid=ch['uuid'], characteristic=ch['characteristic'],
                                        description=ch['description']).to_dict()
-                        for ch in row['characteristics']
+                        for ch in characteristics
                     ],
                     technical_sheets=[
-                        TechnicalSheet(uuid=ts['uuid'], url=ts['document']).to_dict()
-                        for ts in row['technical_sheets']
+                        TechnicalSheet(uuid=ts['uuid'], document=ts['document']).to_dict()
+                        for ts in technical_sheets
+                    ],
+                    providers=[
+                        {
+                            "uuid": provider["uuid"],
+                            "nit": provider["nit"],
+                            "types_person": provider["types_person"],
+                            "name": provider["name"],
+                            "represent": provider["represent"],
+                            "phone": provider["phone"],
+                            "email": provider["email"],
+                        }
+                        for provider in providers
                     ],
                     created_at=row['created_at'],
                     updated_at=row['updated_at'],
@@ -196,9 +244,9 @@ class PGProductRepository(ProductRepository):
                 product.use,
                 product.status,
                 product.sanitize_method,
-                product.image,
-                product.brands.uuid,
-                product.categories.uuid,
+                product.images,
+                product.brand.uuid,
+                product.category.uuid,
                 product.sanitary_register.uuid,
             )
             if row:
@@ -214,7 +262,7 @@ class PGProductRepository(ProductRepository):
                     use=row['use'],
                     status=row['status'],
                     sanitize_method=row['sanitize_method'],
-                    image=row['image'],
+                    images=row['image'],
                     brand=Brand(uuid=row['brand_id']),
                     category=Category(uuid=row['category_id']),
                     sanitary_register=SanitaryRegistry(uuid=row['sanitary_register_id']),
@@ -249,26 +297,26 @@ class PGProductRepository(ProductRepository):
                 conditions.append("LOWER(b.name) LIKE $1")
                 params.append(f"%{filters['brand'].lower()}%")
             if "category" in filters:
-                conditions.append("LOWER(c.name) LIKE $2")
+                conditions.append("LOWER(c.name) LIKE $1")
                 params.append(f"%{filters['category'].lower()}%")
             if "sanitary_registry" in filters:
-                conditions.append("LOWER(sr.number_registry) LIKE $3")
+                conditions.append("LOWER(sr.number_registry) LIKE $1")
                 params.append(f"%{filters['sanitary_registry'].lower()}%")
             if "provider" in filters:
-                conditions.append("LOWER(pr.name) LIKE $4")
+                conditions.append("LOWER(pr.name) LIKE $1")
                 params.append(f"%{filters['provider'].lower()}%")
             if "general" in filters:
                 general_conditions = '''
-                    LOWER(p.generic_name) LIKE $5 OR
-                    LOWER(p.commercial_name) LIKE $5 OR
-                    LOWER(p.description) LIKE $5 OR
-                    LOWER(p.measurement) LIKE $5 OR
-                    LOWER(p.formulation) LIKE $5 OR
-                    LOWER(p.composition) LIKE $5 OR
-                    LOWER(p.reference) LIKE $5 OR
-                    LOWER(p.use) LIKE $5 OR
-                    LOWER(p.status) LIKE $5 OR
-                    LOWER(p.sanitize_method) LIKE $5
+                    LOWER(p.generic_name) LIKE $1 OR
+                    LOWER(p.commercial_name) LIKE $1 OR
+                    LOWER(p.description) LIKE $1 OR
+                    LOWER(p.measurement) LIKE $1 OR
+                    LOWER(p.formulation) LIKE $1 OR
+                    LOWER(p.composition) LIKE $1 OR
+                    LOWER(p.reference) LIKE $1 OR
+                    LOWER(p.use) LIKE $1 OR
+                    LOWER(p.status) LIKE $1 OR
+                    LOWER(p.sanitize_method) LIKE $1
                 '''
                 conditions.append(f"({general_conditions})")
                 params.append(f"%{filters['general'].lower()}%")
@@ -280,24 +328,12 @@ class PGProductRepository(ProductRepository):
 
             return [
                 {
-                    "uuid": row["uuid"],
+                    "uuid": str(row["uuid"]),
                     "generic_name": row["generic_name"],
                     "commercial_name": row["commercial_name"],
                     "description": row["description"],
-                    "measurement": row["measurement"],
-                    "formulation": row["formulation"],
-                    "composition": row["composition"],
-                    "reference": row["reference"],
-                    "use": row["use"],
-                    "status": row["status"],
-                    "sanitize_method": row["sanitize_method"],
-                    "image": row["image"],
-                    "brand": {"uuid": row["brand_uuid"], "name": row["brand_name"]},
-                    "category": {"uuid": row["category_uuid"], "name": row["category_name"]},
-                    "sanitary_registry": {"uuid": row["sanitary_register_uuid"],
-                                          "number_registry": row["number_registry"]},
-                    "created_at": row["created_at"],
-                    "updated_at": row["updated_at"]
+                    "image": row["image"][0] if row["image"] else None,
+                    "brand": {"uuid": str(row["brand_uuid"]), "name": row["brand_name"]}
                 }
                 for row in rows
             ]
@@ -305,14 +341,16 @@ class PGProductRepository(ProductRepository):
     def _parse_query(self, query: str):
         filters = {}
         query = query.lower()
+        value = query.split(' ')
+        search = ' '.join(value[2:])
         if "in: marca" in query:
-            filters["brand"] = query.split("in: marca '")[1].split("'")[0]
+            filters["brand"] = search
         if "in: categoría" in query:
-            filters["category"] = query.split("in: categoría '")[1].split("'")[0]
+            filters["category"] = search
         if "in: registro sanitario" in query:
-            filters["sanitary_registry"] = query.split("in: registro sanitario '")[1].split("'")[0]
+            filters["sanitary_registry"] = search
         if "in: proveedor" in query:
-            filters["provider"] = query.split("in: proveedor '")[1].split("'")[0]
+            filters["provider"] = search
         if not any(key in query for key in ["in: marca", "in: categoría", "in: registro sanitario", "in: proveedor"]):
             filters["general"] = query
         return filters

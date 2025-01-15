@@ -24,15 +24,14 @@ from lucy.infrastructure.repositories.pg_repositories.pg_technical_repository im
 required_fields = [
     "generic_name", "commercial_name", "description", "measurement",
     "formulation", "composition", "reference", "use", "status",
-    "sanitize_method", "file_name", "file_content", "brand",
-    "category", "sanitary_register", "observation", "technical_sheet"
+    "sanitize_method", "images", "brand",
+    "category", "sanitary_register", "comment", "technical_sheet"
 ]
 
 
 async def save(request: Request):
     try:
         data = await request.json()
-
         validation = validate_data(data, required_fields)
         if not validation["is_valid"]:
             return JSONResponse(
@@ -40,15 +39,19 @@ async def save(request: Request):
                 content={
                     'data': None,
                     'success': False,
-                    'response': f"Missing Parameters: {', '.join(validation['missing_fields'])}"
+                    'response': f"Missing Parameters: {', '.join(validation['missing'])}"
                 }
             )
 
         file_service = FileService(upload_dir="static/images")
         image_paths = []
-        for image in data["images"]:
-            image_paths.append(file_service.upload_file(image["file_name"], image["file_content"]))
 
+        for image in data["images"]:
+            static_url = request.url_for(
+                "static",
+                path=file_service.upload_file(image["file_name"], image["file_content"])
+            )
+            image_paths.append(str(static_url))
         technical_sheet_path = file_service.upload_file(
             data["technical_sheet"]["file_name"],
             data["technical_sheet"]["file_content"]
@@ -66,15 +69,14 @@ async def save(request: Request):
             use=data["use"],
             status=data["status"],
             sanitize_method=data["sanitize_method"],
-            image=image_paths,  # Lista de rutas de imágenes
-            brands=Brand(uuid=data["brand"]["uuid"]),
-            categories=Category(uuid=data["category"]["uuid"]),
-            sanitary_register=SanitaryRegistry(uuid=data["sanitary_register"]["uuid"]),
+            images=image_paths,  # Lista de rutas de imágenes
+            brand=Brand(uuid=data["brand"]),
+            category=Category(uuid=data["category"]),
+            sanitary_register=SanitaryRegistry(uuid=data["sanitary_register"]),
         )
-
         comment = Comments(
             uuid=uuid.uuid4(),
-            comment=data["comment"]["comment"]
+            comment=data["comment"]
         )
         technical_sheet = TechnicalSheet(
             uuid=uuid.uuid4(),
@@ -93,7 +95,7 @@ async def save(request: Request):
             characteristics=[
                 Characteristic(
                     uuid=uuid.uuid4(),
-                    characteristic=char["characteristic"],
+                    characteristic=char["name"],
                     description=char["description"],
                 )
                 for char in data.get("characteristics", [])
@@ -119,6 +121,7 @@ async def save(request: Request):
             }
         )
     except Exception as e:
+        print(f'error 500 {e}')
         return JSONResponse(
             status_code=500,
             content={
@@ -290,7 +293,7 @@ async def search(request):
         )
 
 
-async def get_random(request):
+async def get_random(request: Request):
     try:
         use_case = ProductUseCase(product_repository=PGProductRepository())
         products = await use_case.get_random(limit=12)
@@ -316,10 +319,11 @@ async def get_random(request):
 
 routes = [
     Route('/', endpoint=save, methods=['POST']),
-    Route('/{product_id}', endpoint=get_by_id, methods=['GET']),
-    Route('/{product_id}', endpoint=update, methods=['PUT']),
     Route('/search', endpoint=search, methods=['GET']),
     Route('/random', endpoint=get_random, methods=['GET']),
+    Route('/{product_id}', endpoint=get_by_id, methods=['GET']),
+    Route('/{product_id}', endpoint=update, methods=['PUT']),
+
 ]
 
 product = Starlette(routes=routes)

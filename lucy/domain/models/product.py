@@ -17,13 +17,14 @@ class Product(Entity):
     _use = fields.StrField()
     _status = fields.StrField()
     _sanitize_method = fields.StrField()
-    _image = fields.ListField()
+    _images = fields.ListField()
     _brand = fields.LinkField(to=Brand)
     _category = fields.LinkField(to=Category)
-    _sanitary_registry = fields.LinkField(to=SanitaryRegistry)
+    _sanitary_register = fields.LinkField(to=SanitaryRegistry)
     _comments = fields.ListField()
     _characteristics = fields.ListField()
     _technical_sheets = fields.ListField()
+    _providers = fields.ListField()
     _created_at = fields.DatetimeField()
     _updated_at = fields.DatetimeField()
     _deleted_at = fields.DatetimeField()
@@ -41,13 +42,14 @@ class Product(Entity):
             "use": self._use if self._use else None,
             "status": self._status if self._status else None,
             "sanitize_method": self._sanitize_method if self._sanitize_method else None,
-            "image": self._image if self._image else [],
+            "images": self._images if self._images else [],
             "brand": self._brand.to_dict() if self._brand else None,
             "category": self._category.to_dict() if self._category else None,
-            "sanitary_registry": self._sanitary_registry.to_dict() if self._sanitary_registry else None,
+            "sanitary_registry": self._sanitary_register.to_dict() if self._sanitary_register else None,
             "comments": self._comments if self._comments else None,
             "characteristics": self._characteristics if self._characteristics else None,
             "technical_sheets": self._technical_sheets if self._technical_sheets else None,
+            "providers": self._providers if self._providers else None,
             "created_at": self._created_at.isoformat() if self._created_at else None,
             "updated_at": self._updated_at.isoformat() if self._updated_at else None,
             "deleted_at": self._deleted_at.isoformat() if self._deleted_at else None,
