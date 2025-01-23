@@ -242,6 +242,7 @@ async def update(request):
             brand=Brand(uuid=data["brand"]),
             category=Category(uuid=data["category"]),
             sanitary_register=SanitaryRegistry(uuid=data["sanitary_register"]),
+            images=image_paths,
             iva=data.get('iva')
         )
 
