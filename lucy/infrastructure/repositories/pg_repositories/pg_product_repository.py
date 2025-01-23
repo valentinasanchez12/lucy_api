@@ -41,7 +41,7 @@ class PGProductRepository(ProductRepository):
                 for row in rows
             ]
 
-    async def update(self, product_id: str, product: Product, images: list):
+    async def update(self, product_id: str, product: Product):
         pool = get_pool()
         async with pool.acquire() as connection:
             async with connection.transaction():
@@ -62,6 +62,7 @@ class PGProductRepository(ProductRepository):
                         brand_id = COALESCE($13, brand_id),
                         category_id = COALESCE($14, category_id),
                         sanitary_register_id = COALESCE($15, sanitary_register_id),
+                        iva = COALESCE($16, iva),
                         updated_at = LOCALTIMESTAMP
                     WHERE uuid = $1 AND deleted_at IS NULL
                     ''',
@@ -76,10 +77,11 @@ class PGProductRepository(ProductRepository):
                     product.use,
                     product.status,
                     product.sanitize_method,
-                    images,
-                    product.brands.uuid,
-                    product.categories.uuid,
+                    product.images,
+                    product.brand.uuid,
+                    product.category.uuid,
                     product.sanitary_register.uuid,
+                    product.iva
                 )
                 updated_product = await self.get_by_id(product_id)
                 return updated_product
@@ -96,7 +98,7 @@ class PGProductRepository(ProductRepository):
                     p.uuid, p.generic_name, p.commercial_name, p.description, p.measurement,
                     p.formulation, p.composition, p.reference, p.use, p.status,
                     p.sanitize_method, 
-                    p.image,
+                    p.image, p.iva,
                     p.created_at, p.updated_at,
                     b.uuid AS brand_uuid, b.name AS brand_name,
                     c.uuid AS category_uuid, c.name AS category_name,
@@ -180,6 +182,7 @@ class PGProductRepository(ProductRepository):
                     status=row['status'],
                     sanitize_method=row['sanitize_method'],
                     images=row['image'],
+                    iva=row['iva'],
                     brand=Brand(uuid=row['brand_uuid'], name=row['brand_name']),
                     category=Category(uuid=row['category_uuid'], name=row['category_name']),
                     sanitary_register=SanitaryRegistry(uuid=row['sanitary_register_uuid'],
@@ -226,12 +229,12 @@ class PGProductRepository(ProductRepository):
                 INSERT INTO products (
                     uuid, generic_name, commercial_name, description, measurement,
                     formulation, composition, reference, use, status, sanitize_method,
-                    image, brand_id, category_id, sanitary_register_id, created_at, updated_at
+                    image, brand_id, category_id, sanitary_register_id, iva, created_at, updated_at
                 )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, LOCALTIMESTAMP, LOCALTIMESTAMP)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, LOCALTIMESTAMP, LOCALTIMESTAMP)
                 RETURNING uuid, generic_name, commercial_name, description, measurement,
                           formulation, composition, reference, use, status, sanitize_method,
-                          image, brand_id, category_id, sanitary_register_id, created_at, updated_at
+                          image, brand_id, category_id, sanitary_register_id, iva, created_at, updated_at
                 ''',
                 product.uuid,
                 product.generic_name,
@@ -248,6 +251,7 @@ class PGProductRepository(ProductRepository):
                 product.brand.uuid,
                 product.category.uuid,
                 product.sanitary_register.uuid,
+                product.iva
             )
             if row:
                 return Product(
@@ -266,6 +270,7 @@ class PGProductRepository(ProductRepository):
                     brand=Brand(uuid=row['brand_id']),
                     category=Category(uuid=row['category_id']),
                     sanitary_register=SanitaryRegistry(uuid=row['sanitary_register_id']),
+                    iva=row['iva'],
                     created_at=row['created_at'],
                     updated_at=row['updated_at'],
                 )

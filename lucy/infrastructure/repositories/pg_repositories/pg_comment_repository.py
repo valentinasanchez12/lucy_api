@@ -44,12 +44,22 @@ class PGCommentRepository(CommentRepository):
     async def save(self, comment: Comments, product_uuid):
         pool = get_pool()
         async with pool.acquire() as connection:
-            await connection.execute(
+            row = await connection.fetchrow(
                 '''
                 INSERT INTO comments (uuid, comment, product_id, created_at, updated_at)
                 VALUES ($1, $2, $3, LOCALTIMESTAMP, LOCALTIMESTAMP)
+                RETURNING uuid, comment, product_id, created_at, updated_at
                 ''',
                 comment.uuid,
                 comment.comment,
                 product_uuid,
             )
+            print(row['comment'])
+            if row:
+                return Comments(
+                    uuid=row["uuid"],
+                    comment=row["comment"],
+                    product_uuid=row["product_id"],
+                    created_at=row["created_at"],
+                    updated_at=row["updated_at"]
+                )

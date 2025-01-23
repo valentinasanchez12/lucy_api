@@ -1,3 +1,4 @@
+import base64
 import uuid
 
 from starlette.applications import Starlette
@@ -20,7 +21,6 @@ from lucy.infrastructure.repositories.pg_repositories.pg_comment_repository impo
 from lucy.infrastructure.repositories.pg_repositories.pg_product_repository import PGProductRepository
 from lucy.infrastructure.repositories.pg_repositories.pg_technical_repository import PGTechnicalSheetRepository
 
-
 required_fields = [
     "generic_name", "commercial_name", "description", "measurement",
     "formulation", "composition", "reference", "use", "status",
@@ -32,6 +32,7 @@ required_fields = [
 async def save(request: Request):
     try:
         data = await request.json()
+        print(data['iva'])
         validation = validate_data(data, required_fields)
         if not validation["is_valid"]:
             return JSONResponse(
@@ -52,9 +53,9 @@ async def save(request: Request):
                 path=file_service.upload_file(image["file_name"], image["file_content"])
             )
             image_paths.append(str(static_url))
-        technical_sheet_path = file_service.upload_file(
-            data["technical_sheet"]["file_name"],
-            data["technical_sheet"]["file_content"]
+        technical_sheet_path = request.url_for(
+            "static",
+            path=file_service.upload_file(data["technical_sheet"]["file_name"], data["technical_sheet"]["file_content"])
         )
 
         product_data = Product(
@@ -73,6 +74,7 @@ async def save(request: Request):
             brand=Brand(uuid=data["brand"]),
             category=Category(uuid=data["category"]),
             sanitary_register=SanitaryRegistry(uuid=data["sanitary_register"]),
+            iva=data['iva']
         )
         comment = Comments(
             uuid=uuid.uuid4(),
@@ -178,11 +180,44 @@ async def get_by_id(request):
         )
 
 
+def is_base64(cadena):
+    try:
+        # Intenta decodificar la cadena
+        decoded = base64.b64decode(cadena, validate=True)
+        # Verifica que al volver a codificar obtengamos la misma cadena
+        return base64.b64encode(decoded).decode() == cadena
+    except Exception:
+        return False
+
+
 async def update(request):
     try:
         product_id = request.path_params.get('product_id')
         data = await request.json()
-
+        image_paths = []
+        file_service = FileService(upload_dir="static/images")
+        for image in data.get('images'):
+            if is_base64(image.get('file_content')):
+                static_url = request.url_for(
+                    "static",
+                    path=file_service.upload_file(image["file_name"], image["file_content"])
+                )
+                image_paths.append(str(static_url))
+            else:
+                image_paths.append(image.get('file_content'))
+        print(image_paths)
+        technical_sheet_path = ''
+        if is_base64(data.get('technical_sheet', {}).get('file_content')):
+            technical_sheet_path = request.url_for(
+                "static",
+                path=file_service.upload_file(data["technical_sheet"]["file_name"],
+                                               data["technical_sheet"]["file_content"])
+            )
+        else:
+            technical_sheet_path = data.get('technical_sheet', {}).get('file_content')
+        print(technical_sheet_path)
+        print(data.get('characteristics'))
+        pass
         if not product_id or not data:
             return JSONResponse(
                 status_code=400,
@@ -204,9 +239,10 @@ async def update(request):
             use=data.get("use"),
             status=data.get("status"),
             sanitize_method=data.get("sanitize_method"),
-            brands=Brand(uuid=data["brand"]["uuid"]),
-            categories=Category(uuid=data["category"]["uuid"]),
-            sanitary_register=SanitaryRegistry(uuid=data["sanitary_register"]["uuid"]),
+            brand=Brand(uuid=data["brand"]),
+            category=Category(uuid=data["category"]),
+            sanitary_register=SanitaryRegistry(uuid=data["sanitary_register"]),
+            iva=data.get('iva')
         )
 
         use_case = ProductUseCase(
@@ -217,7 +253,6 @@ async def update(request):
         updated_product = await use_case.update(
             product_id=product_id,
             product_data=product_data,
-            images=data.get("images", []),
             characteristics=[
                 Characteristic(
                     characteristic=char["characteristic"],
@@ -225,8 +260,8 @@ async def update(request):
                 ) for char in data.get("characteristics", [])
             ],
             technical_sheet=TechnicalSheet(
-                document=data["technical_sheet"]["file_content"]
-            ) if "technical_sheet" in data else None
+                document=technical_sheet_path
+            )
         )
 
         if updated_product:

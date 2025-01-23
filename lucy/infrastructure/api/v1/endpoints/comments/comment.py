@@ -26,13 +26,11 @@ async def save(request: Request):
                     "response": f"Missing Parameters: {', '.join(missing_fields)}"
                 }
             )
-
         product_id = data["product_uuid"]
         comment = Comments(
-            _uuid=uuid.uuid4(),
-            _comment=data["comment"]
+            uuid=uuid.uuid4(),
+            comment=data["comment"]
         )
-
         use_case = CommentUseCase(repository=PGCommentRepository())
         saved_comment = await use_case.create(comment, product_id)
 

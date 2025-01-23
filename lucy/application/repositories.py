@@ -114,7 +114,7 @@ class ProductRepository(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def update(self, product_id: str, product: Product, images: list):
+    async def update(self, product_id: str, product: Product):
         pass
 
     @abstractmethod

@@ -36,11 +36,10 @@ class ProductUseCase:
         product = await self._product_repository.get_by_id(product_id)
         return product.to_dict() if product else None
 
-    async def update(self, product_id, product_data, images, characteristics, technical_sheet):
+    async def update(self, product_id, product_data, characteristics, technical_sheet):
         updated_product = await self._product_repository.update(
             product_id=product_id,
-            product=product_data,
-            images=images
+            product=product_data
         )
 
         if not updated_product:
