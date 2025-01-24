@@ -1,6 +1,8 @@
+import os
+
 from starlette.applications import Starlette
 from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import PlainTextResponse
+from starlette.responses import PlainTextResponse, FileResponse
 from starlette.routing import Route, Mount
 from starlette.staticfiles import StaticFiles
 
@@ -18,7 +20,7 @@ async def heart_beat(request):
 
 
 routes = [
-    Route('/', endpoint=heart_beat),
+    Route('/heart', endpoint=heart_beat),
     Mount('/api/category', routes=category.routes),
     Mount('/api/provider', routes=provider.routes),
     Mount('/api/sanitary-registry', routes=sanitary_registry.routes),
@@ -33,13 +35,21 @@ app = Starlette(routes=routes)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Origen permitido (frontend)
+    allow_origins=["http://localhost:8080"],  # Origen permitido (frontend)
     allow_methods=["*"],                     # Métodos permitidos (GET, POST, etc.)
     allow_headers=["*"],                     # Headers permitidos
     allow_credentials=True,                  # Permitir credenciales (cookies, Authorization headers)
 )
 
 
+frontend_build_dir = os.path.join('.', 'static')
+
+@app.route('/{path:path}', methods=['GET'])
+async def serve_frontend(request):
+    file_path = os.path.join(frontend_build_dir, 'index.html')
+    return FileResponse(file_path)
+
 @app.on_event('startup')
 async def init_db():
+    print(frontend_build_dir)
     await initialize_pool()
