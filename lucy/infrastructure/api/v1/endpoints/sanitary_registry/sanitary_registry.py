@@ -40,10 +40,9 @@ async def save(request: Request):
 
         file_service = FileService(upload_dir='static/sanitary_register')
         file_path = file_service.upload_file(data['file_name'], data['file_content'])
-        static_url = request.url_for("static", path=file_path)
         sanitary_registry_data = SanitaryRegistry(
             uuid=uuid.uuid4(),
-            url=static_url,
+            url=file_path,
             number_registry=data.get('number_registry'),
             expiration_date=data.get('expiration_date'),
             cluster=data.get('cluster'),

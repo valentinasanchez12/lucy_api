@@ -22,4 +22,5 @@ class FileService:
         file_path = os.path.join(self.upload_dir, new_file_name)
         file.save_to_path(file_path)
         relative_path = os.path.relpath(file_path, start='static').replace('\\', '/')
-        return relative_path
+        print(f"path de la imagen /static/{relative_path}")
+        return f'/static/{relative_path}'

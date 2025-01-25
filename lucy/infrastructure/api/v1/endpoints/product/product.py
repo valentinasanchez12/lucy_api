@@ -32,7 +32,6 @@ required_fields = [
 async def save(request: Request):
     try:
         data = await request.json()
-        print(data['iva'])
         validation = validate_data(data, required_fields)
         if not validation["is_valid"]:
             return JSONResponse(
@@ -48,14 +47,10 @@ async def save(request: Request):
         image_paths = []
 
         for image in data["images"]:
-            static_url = request.url_for(
-                "static",
-                path=file_service.upload_file(image["file_name"], image["file_content"])
-            )
-            image_paths.append(str(static_url))
-        technical_sheet_path = request.url_for(
-            "static",
-            path=file_service.upload_file(data["technical_sheet"]["file_name"], data["technical_sheet"]["file_content"])
+            image_paths.append(file_service.upload_file(image["file_name"], image["file_content"]))
+        technical_sheet_path = file_service.upload_file(
+            data["technical_sheet"]["file_name"],
+            data["technical_sheet"]["file_content"]
         )
 
         product_data = Product(
@@ -70,7 +65,7 @@ async def save(request: Request):
             use=data["use"],
             status=data["status"],
             sanitize_method=data["sanitize_method"],
-            images=image_paths,  # Lista de rutas de imágenes
+            images=image_paths,
             brand=Brand(uuid=data["brand"]),
             category=Category(uuid=data["category"]),
             sanitary_register=SanitaryRegistry(uuid=data["sanitary_register"]),
@@ -194,30 +189,6 @@ async def update(request):
     try:
         product_id = request.path_params.get('product_id')
         data = await request.json()
-        image_paths = []
-        file_service = FileService(upload_dir="static/images")
-        for image in data.get('images'):
-            if is_base64(image.get('file_content')):
-                static_url = request.url_for(
-                    "static",
-                    path=file_service.upload_file(image["file_name"], image["file_content"])
-                )
-                image_paths.append(str(static_url))
-            else:
-                image_paths.append(image.get('file_content'))
-        print(image_paths)
-        technical_sheet_path = ''
-        if is_base64(data.get('technical_sheet', {}).get('file_content')):
-            technical_sheet_path = request.url_for(
-                "static",
-                path=file_service.upload_file(data["technical_sheet"]["file_name"],
-                                               data["technical_sheet"]["file_content"])
-            )
-        else:
-            technical_sheet_path = data.get('technical_sheet', {}).get('file_content')
-        print(technical_sheet_path)
-        print(data.get('characteristics'))
-        pass
         if not product_id or not data:
             return JSONResponse(
                 status_code=400,
@@ -227,6 +198,21 @@ async def update(request):
                     "response": "Product ID and update data are required."
                 }
             )
+        image_paths = []
+        file_service = FileService(upload_dir="static/images")
+        for image in data.get('images'):
+            if is_base64(image.get('file_content')):
+                image_paths.append(file_service.upload_file(image["file_name"], image["file_content"]))
+            else:
+                image_paths.append(image.get('file_content'))
+        technical_sheet_path = ''
+        if is_base64(data.get('technical_sheet', {}).get('file_content')):
+            technical_sheet_path = file_service.upload_file(
+                data["technical_sheet"]["file_name"],
+                data["technical_sheet"]["file_content"]
+            )
+        else:
+            technical_sheet_path = data.get('technical_sheet', {}).get('file_content')
 
         product_data = Product(
             generic_name=data.get("generic_name"),

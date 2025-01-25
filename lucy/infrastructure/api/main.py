@@ -2,7 +2,7 @@ import os
 
 from starlette.applications import Starlette
 from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import PlainTextResponse, FileResponse
+from starlette.responses import PlainTextResponse, FileResponse, JSONResponse
 from starlette.routing import Route, Mount
 from starlette.staticfiles import StaticFiles
 
@@ -35,19 +35,22 @@ app = Starlette(routes=routes)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],  # Origen permitido (frontend)
-    allow_methods=["*"],                     # Métodos permitidos (GET, POST, etc.)
-    allow_headers=["*"],                     # Headers permitidos
-    allow_credentials=True,                  # Permitir credenciales (cookies, Authorization headers)
+    allow_origins=["http://localhost:8080", "http://localhost:5173", "http://192.168.0.52:8080"],  # Origen permitido (frontend)
+    allow_methods=["*"],  # Métodos permitidos (GET, POST, etc.)
+    allow_headers=["*"],  # Headers permitidos
+    allow_credentials=True,  # Permitir credenciales (cookies, Authorization headers)
 )
-
 
 frontend_build_dir = os.path.join('.', 'static')
 
+
 @app.route('/{path:path}', methods=['GET'])
 async def serve_frontend(request):
+    if request.url.path.startswith("/api") or request.url.path.startswith("/static"):
+        return JSONResponse({"error": "Not found"}, status_code=404)
     file_path = os.path.join(frontend_build_dir, 'index.html')
     return FileResponse(file_path)
+
 
 @app.on_event('startup')
 async def init_db():
