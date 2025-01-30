@@ -286,8 +286,7 @@ class PGProductRepository(ProductRepository):
                                 p.sanitize_method, p.image, p.created_at, p.updated_at,
                                 b.uuid AS brand_uuid, b.name AS brand_name,
                                 c.uuid AS category_uuid, c.name AS category_name,
-                                sr.uuid AS sanitary_register_uuid, sr.number_registry,
-                                pr.uuid AS provider_uuid, pr.name AS provider_name
+                                sr.uuid AS sanitary_register_uuid, sr.number_registry
                 FROM products p
                 LEFT JOIN brands b ON p.brand_id = b.uuid
                 LEFT JOIN categories c ON p.category_id = c.uuid
@@ -350,8 +349,7 @@ class PGProductRepository(ProductRepository):
                     "brand": {"uuid": str(row["brand_uuid"]), "name": row["brand_name"]},
                     "category": {"uuid": str(row["category_uuid"]), "name": row["category_name"]},
                     "sanitary_registry": {"uuid": str(row["sanitary_register_uuid"]),
-                                          "number_registry": row["number_registry"]},
-                    "provider": {"uuid": str(row["provider_uuid"]), "name": row["provider_name"]}
+                                          "number_registry": row["number_registry"]}
                 }
                 for row in rows
             ]
