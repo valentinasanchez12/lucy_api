@@ -294,6 +294,7 @@ class PGProductRepository(ProductRepository):
                 LEFT JOIN sanitary_registry sr ON p.sanitary_register_id = sr.uuid
                 LEFT JOIN brand_providers bp ON bp.brand_uuid = b.uuid
                 LEFT JOIN providers pr ON bp.provider_uuid = pr.uuid
+                LEFT JOIN characteristics ch ON ch.product_id = p.uuid
                 WHERE p.deleted_at IS NULL
             '''
 
@@ -324,7 +325,9 @@ class PGProductRepository(ProductRepository):
                     LOWER(p.reference) LIKE ${index} OR
                     LOWER(p.use) LIKE ${index} OR
                     LOWER(p.status) LIKE ${index} OR
-                    LOWER(p.sanitize_method) LIKE ${index}
+                    LOWER(p.sanitize_method) LIKE ${index} OR
+                    LOWER(ch.characteristic) LIKE ${index} OR
+                    LOWER(ch.description) LIKE ${index}
                 '''
                 general_conditions = general_conditions.replace("${index}", f"${len(params) + 1}")
                 conditions.append(f"({general_conditions})")
