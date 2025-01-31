@@ -6,6 +6,7 @@ from starlette.responses import JSONResponse
 from starlette.routing import Route
 
 from lucy.application.use_case.category.category_use_case import CategoryUseCase
+from lucy.application.use_case.category.get_amount_use_case import GetAmountUseCase
 from lucy.domain.models.category import Category
 from lucy.core.utils import validate_data
 from lucy.infrastructure.repositories.pg_repositories.pg_category_repository import PGCategoryRepository
@@ -210,11 +211,33 @@ async def delete_category(request: Request):
             }
         )
 
+async def get_amount(request: Request):
+    try:
+        use_case = GetAmountUseCase(PGCategoryRepository())
+        return JSONResponse(
+            status_code=200,
+            content={
+                'data': await use_case.get_amount(),
+                'success': True,
+                'response': 'Categories fetched successfully.'
+            }
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={
+                'data': None,
+                'success': False,
+                'response': f"Internal Server Error: {str(e)}"
+            }
+        )
+
 routes = [
     Route('/', endpoint=endpoint, methods=['GET', 'POST']),
     Route('/{category_id}', endpoint=get_category_by_id, methods=['GET']),
     Route('/{category_id}', endpoint=update_category, methods=['PUT']),
     Route('/{category_id}', endpoint=delete_category, methods=['DELETE']),
+    Route('/amount', endpoint=get_amount, methods=['GET'])
 ]
 
 category = Starlette(routes=routes)
