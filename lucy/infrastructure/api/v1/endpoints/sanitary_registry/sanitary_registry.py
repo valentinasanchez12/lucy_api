@@ -6,6 +6,7 @@ from starlette.responses import JSONResponse
 from starlette.routing import Route
 
 from lucy.application.services.file_service import FileService
+from lucy.application.use_case.santitary_registry.get_amount_use_case import GetAmountUseCase
 from lucy.application.use_case.santitary_registry.sanitary_registry_use_case import SanitaryRegistryUseCase
 from lucy.domain.models.sanitary_registry import SanitaryRegistry
 from lucy.core.utils import validate_data
@@ -240,11 +241,34 @@ async def delete(request: Request):
         )
 
 
+async def get_amount(request: Request):
+    try:
+        use_case = GetAmountUseCase(repository=PGSanitaryRegistryRepository())
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "data": await use_case.get_amount(),
+                "success": True,
+                "response": "Amount of sanitary registries fetched successfully.",
+            },
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "data": None,
+                "success": False,
+                "response": f"Internal Server Error: {str(e)}",
+            },
+        )
+
 routes = [
     Route('/', endpoint=endpoint, methods=['GET', 'POST']),
     Route('/{registry_id}', endpoint=get_by_id, methods=['GET']),
     Route('/{registry_id}', endpoint=update, methods=['PUT']),
     Route('/{registry_id}', endpoint=delete, methods=['DELETE']),
+    Route('/amount', endpoint=get_amount, methods=['GET'])
 ]
 
 sanitary_registry = Starlette(routes=routes)

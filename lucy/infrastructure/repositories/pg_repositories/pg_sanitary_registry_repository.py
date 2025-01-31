@@ -188,3 +188,17 @@ class PGSanitaryRegistryRepository(SanitaryRegistryRepository):
                     deleted_at=row['deleted_at'],
                 )
             return None
+
+    async def get_amount(self):
+        pool = get_pool()
+        async with pool.acquire() as connection:
+            row = await connection.fetchrow(
+                '''
+                SELECT COUNT(*) as amount
+                FROM sanitary_registry
+                WHERE deleted_at IS NULL
+                '''
+            )
+            if row:
+                return row['amount']
+            return None
