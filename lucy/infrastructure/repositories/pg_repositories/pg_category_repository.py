@@ -110,3 +110,24 @@ class PGCategoryRepository(CategoryRepository):
             created_at=row['created_at'],
             updated_at=row['updated_at']
         )
+
+    async def get_by_name(self, name: str):
+        pool = get_pool()
+        async with pool.acquire() as connection:
+            row = await connection.fetchrow(
+                '''
+                SELECT uuid, name, created_at, updated_at, deleted_at
+                FROM categories
+                WHERE name = $1 AND deleted_at IS NULL
+                ''',
+                name
+            )
+            if row:
+                return Category(
+                    uuid=row['uuid'],
+                    name=row['name'],
+                    created_at=row['created_at'],
+                    updated_at=row['updated_at'],
+                    deleted_at=row['deleted_at']
+                )
+            return None

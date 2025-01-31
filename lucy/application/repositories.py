@@ -32,6 +32,10 @@ class CategoryRepository(metaclass=ABCMeta):
     async def delete(self, category_id: str):
         pass
 
+    @abstractmethod
+    async def get_by_name(self, name: str):
+        pass
+
 
 class ProviderRepository(metaclass=ABCMeta):
 
@@ -53,6 +57,10 @@ class ProviderRepository(metaclass=ABCMeta):
 
     @abstractmethod
     async def delete(self, uuid: str):
+        pass
+
+    @abstractmethod
+    async def get_by_nit(self, nit: str):
         pass
 
 
@@ -77,26 +85,34 @@ class SanitaryRegistryRepository(metaclass=ABCMeta):
     async def delete(self, registry_id: str):
         pass
 
+    @abstractmethod
+    async def get_by_number_registry(self, number_registry: str):
+        pass
+
 
 class BrandRepository(metaclass=ABCMeta):
     @abstractmethod
-    async def save(self, brand: Brand):
+    async def save(self, brand: Brand) -> Brand:
         pass
 
     @abstractmethod
-    async def get_all(self):
+    async def get_all(self) -> [Brand]:
         pass
 
     @abstractmethod
-    async def get_by_id(self, uuid: str):
+    async def get_by_id(self, uuid: str) -> Brand:
         pass
 
     @abstractmethod
-    async def update(self, uuid: str, brand: Brand):
+    async def update(self, uuid: str, brand: Brand) -> Brand:
         pass
 
     @abstractmethod
-    async def delete(self, brand_id: str):
+    async def delete(self, brand_id: str) -> Brand:
+        pass
+
+    @abstractmethod
+    async def get_by_name(self, name: str) -> Brand:
         pass
 
 

@@ -9,8 +9,11 @@ class CategoryUseCase:
         self._category = category
 
     async def create(self):
-        category = await self._repository.save(category=self._category)
-        return category.to_dict()
+        existing_category = await self._repository.get_by_name(name=self._category.name)
+        if not existing_category:
+            new_category = await self._repository.save(category=self._category)
+            return new_category.to_dict()
+        return existing_category.to_dict()
 
     async def get_all(self):
         categories = await self._repository.get_all()
