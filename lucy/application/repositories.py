@@ -36,6 +36,10 @@ class CategoryRepository(metaclass=ABCMeta):
     async def get_by_name(self, name: str):
         pass
 
+    @abstractmethod
+    async def get_amount(self):
+        pass
+
 
 class ProviderRepository(metaclass=ABCMeta):
 
@@ -61,6 +65,10 @@ class ProviderRepository(metaclass=ABCMeta):
 
     @abstractmethod
     async def get_by_nit(self, nit: str):
+        pass
+
+    @abstractmethod
+    async def get_amount(self):
         pass
 
 
@@ -89,6 +97,10 @@ class SanitaryRegistryRepository(metaclass=ABCMeta):
     async def get_by_number_registry(self, number_registry: str):
         pass
 
+    @abstractmethod
+    async def get_amount(self):
+        pass
+
 
 class BrandRepository(metaclass=ABCMeta):
     @abstractmethod
@@ -113,6 +125,10 @@ class BrandRepository(metaclass=ABCMeta):
 
     @abstractmethod
     async def get_by_name(self, name: str) -> Brand:
+        pass
+
+    @abstractmethod
+    async def get_amount(self):
         pass
 
 
@@ -143,6 +159,10 @@ class ProductRepository(metaclass=ABCMeta):
 
     @abstractmethod
     async def get_random(self, limit: int):
+        pass
+
+    @abstractmethod
+    async def get_amount(self):
         pass
 
 
