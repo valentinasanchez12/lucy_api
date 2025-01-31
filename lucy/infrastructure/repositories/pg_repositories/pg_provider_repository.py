@@ -269,3 +269,14 @@ class PGProviderRepository(ProviderRepository):
                 deleted_at=row['provider_deleted_at']
             )
 
+    async def get_amount(self):
+        pool = get_pool()
+        async with pool.acquire() as connection:
+            row = await connection.fetchrow(
+                '''
+                SELECT COUNT(*) AS amount
+                FROM providers
+                WHERE deleted_at IS NULL
+                '''
+            )
+            return row['amount']

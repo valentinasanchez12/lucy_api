@@ -6,6 +6,7 @@ from starlette.responses import JSONResponse
 from starlette.routing import Route
 
 from lucy.application.use_case.brand_provider_use_case import BrandProviderUseCase
+from lucy.application.use_case.provider.get_amount_use_case import GetAmountUseCase
 from lucy.application.use_case.provider.provider_use_case import ProviderUseCase
 from lucy.domain.models.brand import Brand
 from lucy.domain.models.provider import Provider
@@ -234,11 +235,33 @@ async def delete_provider(request: Request):
             }
         )
 
+async def get_amount(request: Request):
+    try:
+        use_case = GetAmountUseCase(PGProviderRepository())
+        return JSONResponse(
+            status_code=200,
+            content={
+                'data': await use_case.get_amount(),
+                'success': True,
+                'response': 'Amount of providers fetched successfully.'
+            }
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={
+                'data': None,
+                'success': False,
+                'response': f"Internal Server Error: {str(e)}"
+            }
+        )
+
 routes = [
     Route('/', endpoint=endpoint, methods=['POST', 'GET']),
     Route('/{provider_id}', endpoint=get_provider_by_id, methods=['GET']),
     Route('/{provider_id}', endpoint=update_provider, methods=['PUT']),
     Route('/{provider_id}', endpoint=delete_provider, methods=['DELETE']),
+    Route('/amount', endpoint=get_amount, methods=['GET'])
 ]
 
 provider = Starlette(routes=routes)
