@@ -231,3 +231,41 @@ class PGProviderRepository(ProviderRepository):
                         deleted_at=row['deleted_at']
                     )
                 return None
+
+    async def get_by_nit(self, nit: str):
+        pool = get_pool()
+        async with pool.acquire() as connection:
+            row = await connection.fetchrow(
+                '''
+                SELECT 
+                    p.uuid AS provider_uuid,
+                    p.types_person,
+                    p.nit,
+                    p.name AS provider_name,
+                    p.represent,
+                    p.phone,
+                    p.email,
+                    p.created_at AS provider_created_at,
+                    p.updated_at AS provider_updated_at,
+                    p.deleted_at AS provider_deleted_at
+                FROM providers p
+                WHERE p.nit = $1 AND p.deleted_at IS NULL
+                ''',
+                nit
+            )
+
+            if not row:
+                return None
+            return Provider(
+                uuid=row['provider_uuid'],
+                types_person=row['types_person'],
+                nit=row['nit'],
+                name=row['provider_name'],
+                represent=row['represent'],
+                phone=row['phone'],
+                email=row['email'],
+                created_at=row['provider_created_at'],
+                updated_at=row['provider_updated_at'],
+                deleted_at=row['provider_deleted_at']
+            )
+

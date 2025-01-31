@@ -11,8 +11,11 @@ class ProviderUseCase:
         self._brand_provider_use_case = brand_provider_use_case
 
     async def create(self):
-        provider = await self._repository.save(self._provider)
-        return provider.to_dict() if provider else None
+        existing_provider = await self._repository.get_by_nit(self._provider.nit)
+        if not existing_provider:
+            new_provider = await self._repository.save(self._provider)
+            return new_provider.to_dict() if new_provider else None
+        return existing_provider.to_dict() if existing_provider else None
 
     async def get_all(self):
         providers_with_brands = await self._repository.get_all()
