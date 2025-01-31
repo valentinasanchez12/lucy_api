@@ -15,7 +15,7 @@ from lucy.domain.models.comments import Comments
 from lucy.domain.models.product import Product
 from lucy.domain.models.sanitary_registry import SanitaryRegistry
 from lucy.domain.models.technical_sheets import TechnicalSheet
-from lucy.infrastructure import validate_data
+from lucy.core.utils import validate_data, convert_line_breaks_to_pipelines
 from lucy.infrastructure.repositories.pg_repositories.pg_characteristic_repository import PGCharacteristicRepository
 from lucy.infrastructure.repositories.pg_repositories.pg_comment_repository import PGCommentRepository
 from lucy.infrastructure.repositories.pg_repositories.pg_product_repository import PGProductRepository
@@ -57,12 +57,12 @@ async def save(request: Request):
             uuid=uuid.uuid4(),
             generic_name=data["generic_name"],
             commercial_name=data["commercial_name"],
-            description=data["description"],
+            description=convert_line_breaks_to_pipelines(data["description"]),
             measurement=data["measurement"],
             formulation=data["formulation"],
-            composition=data["composition"],
+            composition=convert_line_breaks_to_pipelines(data["composition"]),
             reference=data["reference"],
-            use=data["use"],
+            use=convert_line_breaks_to_pipelines(data["use"]),
             status=data["status"],
             sanitize_method=data["sanitize_method"],
             images=image_paths,
@@ -217,12 +217,12 @@ async def update(request):
         product_data = Product(
             generic_name=data.get("generic_name"),
             commercial_name=data.get("commercial_name"),
-            description=data.get("description"),
+            description=convert_line_breaks_to_pipelines(data.get("description")),
             measurement=data.get("measurement"),
             formulation=data.get("formulation"),
-            composition=data.get("composition"),
+            composition=convert_line_breaks_to_pipelines(data.get("composition")),
             reference=data.get("reference"),
-            use=data.get("use"),
+            use=convert_line_breaks_to_pipelines(data.get("use")),
             status=data.get("status"),
             sanitize_method=data.get("sanitize_method"),
             brand=Brand(uuid=data["brand"]),

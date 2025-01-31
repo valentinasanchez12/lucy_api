@@ -7,7 +7,7 @@ from starlette.routing import Route
 
 from lucy.application.use_case.category.category_use_case import CategoryUseCase
 from lucy.domain.models.category import Category
-from lucy.infrastructure import validate_data
+from lucy.core.utils import validate_data
 from lucy.infrastructure.repositories.pg_repositories.pg_category_repository import PGCategoryRepository
 
 

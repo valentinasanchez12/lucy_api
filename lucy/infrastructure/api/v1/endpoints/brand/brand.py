@@ -7,7 +7,7 @@ from starlette.requests import Request
 
 from lucy.application.use_case.brand.create_brand import BrandUseCase
 from lucy.domain.models.brand import Brand
-from lucy.infrastructure import validate_data
+from lucy.core.utils import validate_data
 from lucy.infrastructure.repositories.pg_repositories.pg_brand_repository import PGBrandRepository
 
 

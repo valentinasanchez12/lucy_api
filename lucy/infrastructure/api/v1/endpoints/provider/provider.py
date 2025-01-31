@@ -9,7 +9,7 @@ from lucy.application.use_case.brand_provider_use_case import BrandProviderUseCa
 from lucy.application.use_case.provider.provider_use_case import ProviderUseCase
 from lucy.domain.models.brand import Brand
 from lucy.domain.models.provider import Provider
-from lucy.infrastructure import validate_data
+from lucy.core.utils import validate_data
 from lucy.infrastructure.repositories.pg_repositories.pg_brand_provider_repository import PGBrandProviderRepository
 from lucy.infrastructure.repositories.pg_repositories.pg_provider_repository import PGProviderRepository
 

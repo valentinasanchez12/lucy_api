@@ -8,7 +8,7 @@ from starlette.routing import Route
 from lucy.application.services.file_service import FileService
 from lucy.application.use_case.santitary_registry.sanitary_registry_use_case import SanitaryRegistryUseCase
 from lucy.domain.models.sanitary_registry import SanitaryRegistry
-from lucy.infrastructure import validate_data
+from lucy.core.utils import validate_data
 from lucy.infrastructure.repositories.pg_repositories.pg_sanitary_registry_repository import \
     PGSanitaryRegistryRepository
 

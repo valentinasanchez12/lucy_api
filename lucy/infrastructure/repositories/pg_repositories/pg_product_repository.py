@@ -1,6 +1,7 @@
 import ast
 
 from lucy.application.repositories import ProductRepository
+from lucy.core.utils import convert_pipelines_to_line_breaks
 from lucy.domain.models.brand import Brand
 from lucy.domain.models.category import Category
 from lucy.domain.models.characteristic import Characteristic
@@ -168,17 +169,17 @@ class PGProductRepository(ProductRepository):
                     ast.literal_eval(provider) if isinstance(provider, str) else provider
                     for provider in row['providers']
                 ]
-
+                print(convert_pipelines_to_line_breaks(row['use']))
                 return Product(
                     uuid=row['uuid'],
                     generic_name=row['generic_name'],
                     commercial_name=row['commercial_name'],
-                    description=row['description'],
+                    description=convert_pipelines_to_line_breaks(row['description']),
                     measurement=row['measurement'],
                     formulation=row['formulation'],
-                    composition=row['composition'],
+                    composition=convert_pipelines_to_line_breaks(row['composition']),
                     reference=row['reference'],
-                    use=row['use'],
+                    use=convert_pipelines_to_line_breaks(row['use']),
                     status=row['status'],
                     sanitize_method=row['sanitize_method'],
                     images=row['image'],
