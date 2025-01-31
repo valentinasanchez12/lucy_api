@@ -9,9 +9,11 @@ class SanitaryRegistryUseCase:
         self._sanitary_registry = sanitary_registry
 
     async def create(self):
-        inserted_registry = await self._repository.save(sanitary_registry=self._sanitary_registry)
-        print('inserted_registry', inserted_registry)
-        return inserted_registry.to_dict() if inserted_registry else None
+        existing_registry = await self._repository.get_by_number_registry(self._sanitary_registry.number_registry)
+        if not existing_registry:
+            new_registry = await self._repository.save(self._sanitary_registry)
+            return new_registry.to_dict() if new_registry else None
+        return existing_registry.to_dict() if existing_registry else None
 
     async def get_all(self):
         sanitary_registries = await self._repository.get_all()

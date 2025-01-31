@@ -161,3 +161,30 @@ class PGSanitaryRegistryRepository(SanitaryRegistryRepository):
                     deleted_at=None
                 )
             return None
+
+    async def get_by_number_registry(self, number_registry: str):
+        pool = get_pool()
+        async with pool.acquire() as connection:
+            row = await connection.fetchrow(
+                '''
+                SELECT uuid, url, number_registry, expiration_date, cluster, 
+                status, type_risk, created_at, updated_at, deleted_at
+                FROM sanitary_registry
+                WHERE number_registry = $1 AND deleted_at IS NULL
+                ''',
+                number_registry
+            )
+            if row:
+                return SanitaryRegistry(
+                    uuid=row['uuid'],
+                    url=row['url'],
+                    number_registry=row['number_registry'],
+                    expiration_date=row['expiration_date'],
+                    cluster=row['cluster'],
+                    status=row['status'],
+                    type_risk=row['type_risk'],
+                    created_at=row['created_at'],
+                    updated_at=row['updated_at'],
+                    deleted_at=row['deleted_at'],
+                )
+            return None
