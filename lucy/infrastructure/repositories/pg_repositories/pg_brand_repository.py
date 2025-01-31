@@ -128,3 +128,15 @@ class PGBrandRepository(BrandRepository):
                     deleted_at=row['deleted_at']
                 )
             return None
+
+    async def get_amount(self):
+        pool = get_pool()
+        async with pool.acquire() as connection:
+            row = await connection.fetchrow(
+                '''
+                SELECT COUNT(*)
+                FROM brands
+                WHERE deleted_at IS NULL
+                '''
+            )
+            return row['count']

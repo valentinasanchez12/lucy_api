@@ -6,6 +6,7 @@ from starlette.routing import Route
 from starlette.requests import Request
 
 from lucy.application.use_case.brand.create_brand import BrandUseCase
+from lucy.application.use_case.brand.get_amount_use_case import GetAmountUseCase
 from lucy.domain.models.brand import Brand
 from lucy.core.utils import validate_data
 from lucy.infrastructure.repositories.pg_repositories.pg_brand_repository import PGBrandRepository
@@ -207,11 +208,33 @@ async def delete_brand(request: Request):
             }
         )
 
+async def get_amount(request: Request):
+    try:
+        use_case = GetAmountUseCase(PGBrandRepository())
+        return JSONResponse(
+            status_code=200,
+            content={
+                'data': await use_case.execute(),
+                'success': True,
+                'response': 'Amount of brands fetched successfully.'
+            }
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={
+                'data': None,
+                'success': False,
+                'response': f"Internal Server Error: {str(e)}"
+            }
+        )
+
 routes = [
     Route('/', endpoint=endpoint, methods=['POST', 'GET']),
     Route('/{brand_id}', endpoint=get_brand_by_id, methods=['GET']),
     Route('/{brand_id}', endpoint=update_brand, methods=['PUT']),
     Route('/{brand_id}', endpoint=delete_brand, methods=['DELETE']),
+    Route('/amount', endpoint=get_amount, methods=['GET'])
 ]
 
 brand = Starlette(routes=routes)
