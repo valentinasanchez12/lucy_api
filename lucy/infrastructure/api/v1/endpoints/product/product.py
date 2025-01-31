@@ -7,6 +7,7 @@ from starlette.responses import JSONResponse
 from starlette.routing import Route
 
 from lucy.application.services.file_service import FileService
+from lucy.application.use_case.product.get_amount_use_case import GetAmountUseCase
 from lucy.application.use_case.product.product_use_case import ProductUseCase
 from lucy.domain.models.brand import Brand
 from lucy.domain.models.category import Category
@@ -339,12 +340,35 @@ async def get_random(request: Request):
         )
 
 
+async def get_amount(request: Request):
+    try:
+        use_case = GetAmountUseCase(PGProductRepository())
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "data": await use_case.get_amount(),
+                "success": True,
+                "response": "Amount of products retrieved successfully."
+            }
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "data": None,
+                "success": False,
+                "response": f"Internal Server Error: {str(e)}"
+            }
+        )
+
 routes = [
     Route('/', endpoint=save, methods=['POST']),
     Route('/search', endpoint=search, methods=['GET']),
     Route('/random', endpoint=get_random, methods=['GET']),
     Route('/{product_id}', endpoint=get_by_id, methods=['GET']),
     Route('/{product_id}', endpoint=update, methods=['PUT']),
+    Route('/amount', endpoint=get_amount, methods=['GET'])
 
 ]
 

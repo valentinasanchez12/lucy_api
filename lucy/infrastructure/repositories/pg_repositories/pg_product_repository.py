@@ -381,3 +381,15 @@ class PGProductRepository(ProductRepository):
             filters["general"] = query.strip()
 
         return filters
+
+    async def get_amount(self):
+        pool = get_pool()
+        async with pool.acquire() as connection:
+            row = await connection.fetchrow(
+                '''
+                SELECT COUNT(*)
+                FROM products
+                WHERE deleted_at IS NULL
+                '''
+            )
+            return row['count']
