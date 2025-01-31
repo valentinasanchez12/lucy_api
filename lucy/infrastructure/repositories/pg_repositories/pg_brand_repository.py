@@ -4,7 +4,7 @@ from lucy.infrastructure.repositories.pg_repositories.pg_pool import get_pool
 
 
 class PGBrandRepository(BrandRepository):
-    async def get_all(self):
+    async def get_all(self) -> [Brand]:
         pool = get_pool()
         async with pool.acquire() as connection:
             rows = await connection.fetch(
@@ -22,7 +22,7 @@ class PGBrandRepository(BrandRepository):
                 deleted_at=row['deleted_at']
             ) for row in rows]
 
-    async def get_by_id(self, uuid: str):
+    async def get_by_id(self, uuid: str) -> Brand:
         pool = get_pool()
         async with pool.acquire() as connection:
             row = await connection.fetchrow(
@@ -43,7 +43,7 @@ class PGBrandRepository(BrandRepository):
                 )
             return None
 
-    async def update(self, uuid: str, brand: Brand):
+    async def update(self, uuid: str, brand: Brand) -> Brand:
         pool = get_pool()
         async with pool.acquire() as connection:
             row = await connection.fetchrow(
@@ -67,7 +67,7 @@ class PGBrandRepository(BrandRepository):
                 )
             return None
 
-    async def delete(self, brand_id: str):
+    async def delete(self, brand_id: str) -> Brand:
             pool = get_pool()
             async with pool.acquire() as connection:
                 row = await connection.fetchrow(
@@ -89,7 +89,7 @@ class PGBrandRepository(BrandRepository):
                     )
                 return None
 
-    async def save(self, brand: Brand):
+    async def save(self, brand: Brand) -> Brand:
         pool = get_pool()
         async with pool.acquire() as connection:
             row = await connection.fetchrow(
@@ -107,3 +107,24 @@ class PGBrandRepository(BrandRepository):
                 created_at=row['created_at'],
                 updated_at=row['updated_at']
             )
+
+    async def get_by_name(self, name: str) -> Brand:
+        pool = get_pool()
+        async with pool.acquire() as connection:
+            row = await connection.fetchrow(
+                '''
+                SELECT uuid, name, created_at, updated_at, deleted_at
+                FROM brands
+                WHERE name = $1 AND deleted_at IS NULL
+                ''',
+                name
+            )
+            if row:
+                return Brand(
+                    uuid=row['uuid'],
+                    name=row['name'],
+                    created_at=row['created_at'],
+                    updated_at=row['updated_at'],
+                    deleted_at=row['deleted_at']
+                )
+            return None

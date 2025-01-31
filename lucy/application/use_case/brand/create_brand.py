@@ -8,8 +8,11 @@ class BrandUseCase:
         self._brand = brand
 
     async def create(self):
-        brand = await self._repository.save(brand=self._brand)
-        return brand.to_dict()
+        existing_brand = await self._repository.get_by_name(self._brand.name)
+        if not existing_brand:
+            brand = await self._repository.save(brand=self._brand)
+            return brand.to_dict()
+        return existing_brand.to_dict()
 
     async def get_all(self):
         brands = await self._repository.get_all()
