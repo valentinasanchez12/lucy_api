@@ -9,7 +9,7 @@ from lucy.application.services.file_service import FileService
 from lucy.application.use_case.santitary_registry.get_amount_use_case import GetAmountUseCase
 from lucy.application.use_case.santitary_registry.sanitary_registry_use_case import SanitaryRegistryUseCase
 from lucy.domain.models.sanitary_registry import SanitaryRegistry
-from lucy.core.utils import validate_data
+from lucy.core.utils import validate_data, is_base64
 from lucy.infrastructure.repositories.pg_repositories.pg_sanitary_registry_repository import \
     PGSanitaryRegistryRepository
 
@@ -170,11 +170,14 @@ async def update(request: Request):
             )
         static_url = None
         file_service = FileService(upload_dir="static/sanitary_register")
-        if "file_name" in data and "file_content" in data:
+        file_path = ''
+        if is_base64(data["file_content"]):
             file_path = file_service.upload_file(data["file_name"], data["file_content"])
-            static_url = request.url_for("static", path=file_path)
+        else:
+            file_path = data.get('file_name')
+
         use_case = SanitaryRegistryUseCase(repository=PGSanitaryRegistryRepository())
-        updated_registry = await use_case.update(registry_id, data, static_url)
+        updated_registry = await use_case.update(registry_id, data, file_path)
 
         if updated_registry:
             return JSONResponse(

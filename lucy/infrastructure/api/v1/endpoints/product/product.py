@@ -1,4 +1,3 @@
-import base64
 import uuid
 
 from starlette.applications import Starlette
@@ -16,7 +15,7 @@ from lucy.domain.models.comments import Comments
 from lucy.domain.models.product import Product
 from lucy.domain.models.sanitary_registry import SanitaryRegistry
 from lucy.domain.models.technical_sheets import TechnicalSheet
-from lucy.core.utils import validate_data, convert_line_breaks_to_pipelines
+from lucy.core.utils import validate_data, convert_line_breaks_to_pipelines, is_base64
 from lucy.infrastructure.repositories.pg_repositories.pg_characteristic_repository import PGCharacteristicRepository
 from lucy.infrastructure.repositories.pg_repositories.pg_comment_repository import PGCommentRepository
 from lucy.infrastructure.repositories.pg_repositories.pg_product_repository import PGProductRepository
@@ -174,16 +173,6 @@ async def get_by_id(request):
                 "response": f"Internal Server Error: {str(e)}"
             }
         )
-
-
-def is_base64(cadena):
-    try:
-        # Intenta decodificar la cadena
-        decoded = base64.b64decode(cadena, validate=True)
-        # Verifica que al volver a codificar obtengamos la misma cadena
-        return base64.b64encode(decoded).decode() == cadena
-    except Exception:
-        return False
 
 
 async def update(request):
