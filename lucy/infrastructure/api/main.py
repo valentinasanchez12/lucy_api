@@ -54,5 +54,4 @@ async def serve_frontend(request):
 
 @app.on_event('startup')
 async def init_db():
-    print(frontend_build_dir)
     await initialize_pool()

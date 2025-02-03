@@ -231,10 +231,10 @@ async def get_amount(request: Request):
 
 routes = [
     Route('/', endpoint=endpoint, methods=['POST', 'GET']),
+    Route('/amount', endpoint=get_amount, methods=['GET']),
     Route('/{brand_id}', endpoint=get_brand_by_id, methods=['GET']),
     Route('/{brand_id}', endpoint=update_brand, methods=['PUT']),
     Route('/{brand_id}', endpoint=delete_brand, methods=['DELETE']),
-    Route('/amount', endpoint=get_amount, methods=['GET'])
 ]
 
 brand = Starlette(routes=routes)

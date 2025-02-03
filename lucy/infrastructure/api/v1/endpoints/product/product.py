@@ -330,7 +330,9 @@ async def get_random(request: Request):
 
 
 async def get_amount(request: Request):
+    print('get_amount 1')
     try:
+        print('get_amount')
         use_case = GetAmountUseCase(PGProductRepository())
 
         return JSONResponse(
@@ -355,10 +357,9 @@ routes = [
     Route('/', endpoint=save, methods=['POST']),
     Route('/search', endpoint=search, methods=['GET']),
     Route('/random', endpoint=get_random, methods=['GET']),
+    Route('/amount', endpoint=get_amount, methods=['GET']),
     Route('/{product_id}', endpoint=get_by_id, methods=['GET']),
-    Route('/{product_id}', endpoint=update, methods=['PUT']),
-    Route('/amount', endpoint=get_amount, methods=['GET'])
-
+    Route('/{product_id}', endpoint=update, methods=['PUT'])
 ]
 
 product = Starlette(routes=routes)

@@ -268,10 +268,10 @@ async def get_amount(request: Request):
 
 routes = [
     Route('/', endpoint=endpoint, methods=['GET', 'POST']),
+    Route('/amount', endpoint=get_amount, methods=['GET']),
     Route('/{registry_id}', endpoint=get_by_id, methods=['GET']),
     Route('/{registry_id}', endpoint=update, methods=['PUT']),
     Route('/{registry_id}', endpoint=delete, methods=['DELETE']),
-    Route('/amount', endpoint=get_amount, methods=['GET'])
 ]
 
 sanitary_registry = Starlette(routes=routes)

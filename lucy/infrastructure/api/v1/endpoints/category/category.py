@@ -234,10 +234,11 @@ async def get_amount(request: Request):
 
 routes = [
     Route('/', endpoint=endpoint, methods=['GET', 'POST']),
+    Route('/amount', endpoint=get_amount, methods=['GET']),
     Route('/{category_id}', endpoint=get_category_by_id, methods=['GET']),
     Route('/{category_id}', endpoint=update_category, methods=['PUT']),
     Route('/{category_id}', endpoint=delete_category, methods=['DELETE']),
-    Route('/amount', endpoint=get_amount, methods=['GET'])
+
 ]
 
 category = Starlette(routes=routes)
