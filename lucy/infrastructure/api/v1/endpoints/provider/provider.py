@@ -50,6 +50,7 @@ async def save(request: Request):
             represent=data['represent'],
             phone=data['phone'],
             email=data['email'],
+            certificate_url=data.get('certificate_url', ''),
             brands=brand_data
         )
 
@@ -161,7 +162,7 @@ async def update_provider(request: Request):
                     'response': f"Missing Parameters: {', '.join(validation['missing'])}"
                 }
             )
-        print(data)
+
         brand_provider_repository = PGBrandProviderRepository()
         brand_provider_use_case = BrandProviderUseCase(repository=brand_provider_repository)
         provider_use_case = ProviderUseCase(

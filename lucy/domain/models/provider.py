@@ -12,6 +12,7 @@ class Provider(Entity):
     _phone = fields.StrField()
     _email = fields.StrField()
     _brands = fields.ListField()
+    _certificate_url = fields.StrField()
     _created_at = fields.DatetimeField()
     _updated_at = fields.DatetimeField()
     _deleted_at = fields.DatetimeField()
@@ -29,6 +30,7 @@ class Provider(Entity):
             "represent": self._represent if self._represent else None,
             "phone": self._phone if self._phone else None,
             "email": self._email if self._email else None,
+            "certificate_url": self._certificate_url if self._certificate_url else None,
             "brands": self._brands if self._brands else None,
             "created_at": self._created_at.isoformat() if self._created_at else None,
             "updated_at": self._updated_at.isoformat() if self._updated_at else None,

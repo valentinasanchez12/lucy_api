@@ -48,6 +48,7 @@ class ProviderUseCase:
             represent=update_data.get('represent'),
             phone=update_data.get('phone'),
             email=update_data.get('email'),
+            certificate_url=update_data.get('certificate_url', ''),
         )
         updated_provider = await self._repository.update(uuid, provider)
 

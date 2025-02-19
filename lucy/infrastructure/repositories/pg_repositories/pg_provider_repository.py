@@ -11,9 +11,11 @@ class PGProviderRepository(ProviderRepository):
         async with pool.acquire() as connection:
             inserted_row = await connection.fetchrow(
                 '''
-                    insert into providers (uuid, types_person, nit, name, represent, phone, email, created_at, updated_at)
+                    insert into providers 
+                    (uuid, types_person, nit, name, represent, phone, email, certificate_url, created_at, updated_at)
                     values ($1, $2, $3, $4, $5, $6,$7, LOCALTIMESTAMP, LOCALTIMESTAMP)
-                    returning uuid, types_person, nit, name, represent, phone, email, created_at, updated_at
+                    returning uuid, types_person, nit, name, represent, 
+                    phone, email, certificate_url, created_at, updated_at
                 ''',
                 provider.uuid,
                 provider.types_person,
@@ -21,7 +23,8 @@ class PGProviderRepository(ProviderRepository):
                 provider.name,
                 provider.represent,
                 provider.phone,
-                provider.email
+                provider.email,
+                provider.certificate_url
             )
             return Provider(
                 uuid=inserted_row['uuid'],
@@ -31,6 +34,7 @@ class PGProviderRepository(ProviderRepository):
                 represent=inserted_row['represent'],
                 phone=inserted_row['phone'],
                 email=inserted_row['email'],
+                certificate_url=inserted_row['certificate_url'],
                 created_at=inserted_row['created_at'],
             )
 
@@ -47,6 +51,7 @@ class PGProviderRepository(ProviderRepository):
                     p.represent,
                     p.phone,
                     p.email,
+                    p.certificate_url,
                     p.created_at AS provider_created_at,
                     p.updated_at AS provider_updated_at,
                     p.deleted_at AS provider_deleted_at,
@@ -76,6 +81,7 @@ class PGProviderRepository(ProviderRepository):
                             represent=row['represent'],
                             phone=row['phone'],
                             email=row['email'],
+                            certificate_url=row['certificate_url'],
                             created_at=row['provider_created_at'],
                             updated_at=row['provider_updated_at'],
                             deleted_at=row['provider_deleted_at']
@@ -114,6 +120,7 @@ class PGProviderRepository(ProviderRepository):
                     p.represent,
                     p.phone,
                     p.email,
+                    p.certificate_url,
                     p.created_at AS provider_created_at,
                     p.updated_at AS provider_updated_at,
                     p.deleted_at AS provider_deleted_at,
@@ -146,6 +153,7 @@ class PGProviderRepository(ProviderRepository):
                         represent=row['represent'],
                         phone=row['phone'],
                         email=row['email'],
+                        certicate_url=row['certificate_url'],
                         created_at=row['provider_created_at'],
                         updated_at=row['provider_updated_at'],
                         deleted_at=row['provider_deleted_at']
@@ -177,9 +185,10 @@ class PGProviderRepository(ProviderRepository):
                     represent = COALESCE($5, represent),
                     phone = COALESCE($6, phone),
                     email = COALESCE($7, email),
+                    certificate_url = COALESCE($8, certificate_url),
                     updated_at = LOCALTIMESTAMP
                 WHERE uuid = $1 AND deleted_at IS NULL
-                RETURNING uuid, nit, types_person, name, represent, phone, email, created_at, updated_at, deleted_at
+                RETURNING uuid, nit, types_person, name, represent, phone, email, certificate_url, created_at, updated_at, deleted_at
                 ''',
                 uuid,
                 provider.name,
@@ -187,7 +196,8 @@ class PGProviderRepository(ProviderRepository):
                 provider.nit,
                 provider.represent,
                 provider.phone,
-                provider.email
+                provider.email,
+                provider.certificate_url
             )
             if row:
                 return Provider(
@@ -198,6 +208,7 @@ class PGProviderRepository(ProviderRepository):
                     represent=row['represent'],
                     phone=row['phone'],
                     email=row['email'],
+                    certificate_url=row['certificate_url'],
                     created_at=row['created_at'],
                     updated_at=row['updated_at'],
                     deleted_at=row['deleted_at']
@@ -226,6 +237,7 @@ class PGProviderRepository(ProviderRepository):
                         represent=row['represent'],
                         phone=row['phone'],
                         email=row['email'],
+                        certificate_url=row['certificate_url'],
                         created_at=row['created_at'],
                         updated_at=row['updated_at'],
                         deleted_at=row['deleted_at']
@@ -245,6 +257,7 @@ class PGProviderRepository(ProviderRepository):
                     p.represent,
                     p.phone,
                     p.email,
+                    p.certificate_url,
                     p.created_at AS provider_created_at,
                     p.updated_at AS provider_updated_at,
                     p.deleted_at AS provider_deleted_at
@@ -264,6 +277,7 @@ class PGProviderRepository(ProviderRepository):
                 represent=row['represent'],
                 phone=row['phone'],
                 email=row['email'],
+                certificate_url=row['certificate_url'],
                 created_at=row['provider_created_at'],
                 updated_at=row['provider_updated_at'],
                 deleted_at=row['provider_deleted_at']
