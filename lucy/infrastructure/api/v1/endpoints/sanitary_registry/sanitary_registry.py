@@ -168,11 +168,10 @@ async def update(request: Request):
                     "response": "No data provided for update.",
                 },
             )
-        static_url = None
         file_service = FileService(upload_dir="static/sanitary_register")
         file_path = ''
-        if is_base64(data["file_content"]):
-            file_path = file_service.upload_file(data["file_name"], data["file_content"])
+        if is_base64(data.get('file_content')):
+            file_path = file_service.upload_file(data['file_name'], data['file_content'])
         else:
             file_path = data.get('file_name')
 
