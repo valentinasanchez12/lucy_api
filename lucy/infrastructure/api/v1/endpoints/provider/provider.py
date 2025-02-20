@@ -5,12 +5,13 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.routing import Route
 
+from lucy.application.services.file_service import FileService
 from lucy.application.use_case.brand_provider_use_case import BrandProviderUseCase
 from lucy.application.use_case.provider.get_amount_use_case import GetAmountUseCase
 from lucy.application.use_case.provider.provider_use_case import ProviderUseCase
 from lucy.domain.models.brand import Brand
 from lucy.domain.models.provider import Provider
-from lucy.core.utils import validate_data
+from lucy.core.utils import validate_data, is_base64
 from lucy.infrastructure.repositories.pg_repositories.pg_brand_provider_repository import PGBrandProviderRepository
 from lucy.infrastructure.repositories.pg_repositories.pg_provider_repository import PGProviderRepository
 
@@ -38,6 +39,9 @@ async def save(request: Request):
                     'response': f"Missing Parameters: {', '.join(validation['missing'])}"
                 }
             )
+
+        file_service = FileService(upload_dir='static/providers')
+        file_path = file_service.upload_file(data['file_name'], data['file_content'])
         brand_data = []
         for brand in data['brands']:
             brand_data.append(Brand(**brand))
@@ -50,7 +54,7 @@ async def save(request: Request):
             represent=data['represent'],
             phone=data['phone'],
             email=data['email'],
-            certificate_url=data.get('certificate_url', ''),
+            certificate_url=file_path,
             brands=brand_data
         )
 
@@ -163,13 +167,20 @@ async def update_provider(request: Request):
                 }
             )
 
+        file_service = FileService(upload_dir='static/providers')
+        file_path = ''
+        if is_base64(data.get('file_content')):
+            file_path = file_service.upload_file(data['file_name'], data['file_content'])
+        else:
+            file_path = data.get('file_name')
+
         brand_provider_repository = PGBrandProviderRepository()
         brand_provider_use_case = BrandProviderUseCase(repository=brand_provider_repository)
         provider_use_case = ProviderUseCase(
             repository=PGProviderRepository(),
             brand_provider_use_case=brand_provider_use_case
         )
-
+        data['certificate_url'] = file_path
         updated_provider = await provider_use_case.update(uuid=provider_id, update_data=data)
 
         if updated_provider:
@@ -191,7 +202,6 @@ async def update_provider(request: Request):
                 }
             )
     except Exception as e:
-        print(e)
         return JSONResponse(
             status_code=500,
             content={

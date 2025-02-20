@@ -13,7 +13,7 @@ class PGProviderRepository(ProviderRepository):
                 '''
                     insert into providers 
                     (uuid, types_person, nit, name, represent, phone, email, certificate_url, created_at, updated_at)
-                    values ($1, $2, $3, $4, $5, $6,$7, LOCALTIMESTAMP, LOCALTIMESTAMP)
+                    values ($1, $2, $3, $4, $5, $6,$7, $8, LOCALTIMESTAMP, LOCALTIMESTAMP)
                     returning uuid, types_person, nit, name, represent, 
                     phone, email, certificate_url, created_at, updated_at
                 ''',
