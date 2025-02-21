@@ -61,7 +61,6 @@ async def save(request: Request):
 
 
 async def get_all_brands(request: Request):
-    print('Hola')
     try:
         use_case = BrandUseCase(repository=PGBrandRepository())
         return JSONResponse(

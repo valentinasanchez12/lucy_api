@@ -41,7 +41,9 @@ async def save(request: Request):
             )
 
         file_service = FileService(upload_dir='static/providers')
-        file_path = file_service.upload_file(data['file_name'], data['file_content'])
+        file_path = ''
+        if data.get('file_content'):
+            file_path = file_service.upload_file(data['file_name'], data['file_content'])
         brand_data = []
         for brand in data['brands']:
             brand_data.append(Brand(**brand))
@@ -172,7 +174,7 @@ async def update_provider(request: Request):
         if is_base64(data.get('file_content')):
             file_path = file_service.upload_file(data['file_name'], data['file_content'])
         else:
-            file_path = data.get('file_name')
+            file_path = data.get('file_name', '')
 
         brand_provider_repository = PGBrandProviderRepository()
         brand_provider_use_case = BrandProviderUseCase(repository=brand_provider_repository)
